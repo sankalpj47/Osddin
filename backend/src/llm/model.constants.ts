@@ -37,6 +37,10 @@ export const PromptDtoSchema = z.object({
   messages: z.array(z.any()).optional(),
   sessionId: z.string().optional(),
   userId: z.string().optional(),
+  selectedNodeContext: z.array(z.object({
+    id: z.string(),
+    label: z.string(),
+  })).optional(),
 });
 
 export class PromptDto extends createZodDto(PromptDtoSchema) {}

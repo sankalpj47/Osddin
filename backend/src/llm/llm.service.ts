@@ -142,8 +142,18 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
     // Generate tools (backend-side)
     const tools = this.generateKGTools();
 
-    // Build system prompt with graph context
-    const systemPrompt = this.KG_SYSTEM_PROMPT;
+    // Build system prompt with graph context and selected node information
+    let systemPrompt = this.KG_SYSTEM_PROMPT;
+    
+    // Add selected node context if available
+    
+    if (promptDto.selectedNodeContext && promptDto.selectedNodeContext.length > 0) {
+      const selectedNodeInfo = promptDto.selectedNodeContext
+        .map(node => `- ${node.label} (ID: ${node.id})`)
+        .join('\n');
+      systemPrompt += `\n\n**CURRENT CONTEXT - SELECTED NODES:**\nThe user has the following node(s) currently selected in the graph:\n${selectedNodeInfo}\n\nYou should reference these selected nodes when relevant to their questions.`;
+    }
+    console.log(systemPrompt);
 
     // Convert messages to AI SDK format
     const messages: ModelMessage[] = [

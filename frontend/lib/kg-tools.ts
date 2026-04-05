@@ -427,14 +427,14 @@ export async function findSimplePaths(
       },
     });
 
-    // Timeout after 30 seconds
+    // Timeout after 60 seconds
     setTimeout(() => {
       eventEmitter.off(Events.ALGORITHM_RESULTS, handleResults);
       resolve({
         success: false,
-        error: 'Path finding timed out after 30 seconds',
+        error: 'Path finding timed out after 60 seconds',
       });
-    }, 30000);
+    }, 60000);
   });
 }
 
@@ -479,11 +479,13 @@ export function getNeighborhood(input: GetNeighborhoodInput, context: ToolContex
         queue.push({ id: neighbor, distance: current.distance + 1 });
       }
 
-      // Add edge
-      const edge = graph.edge(current.id, neighbor);
-      if (edge && !graph.getEdgeAttribute(edge, 'hidden')) {
-        edgeSet.add(edge);
-      }
+      // Add edge - use .edges() for multigraph support
+      const edges = graph.edges(current.id, neighbor);
+      edges.forEach(edge => {
+        if (!graph.getEdgeAttribute(edge, 'hidden')) {
+          edgeSet.add(edge);
+        }
+      });
     });
   }
 
@@ -1787,14 +1789,16 @@ export function clickEdge(input: ClickEdgeInput, context: ToolContext): ToolResu
   const { sourceId, targetId } = input;
   const graph = getGraph(context);
 
-  const edgeId = graph.edge(sourceId, targetId);
-  if (!edgeId) {
+  // Use .edges() for multigraph support - get first edge
+  const edgeIds = graph.edges(sourceId, targetId);
+  if (!edgeIds || edgeIds.length === 0) {
     return {
       success: false,
       error: `Edge between '${sourceId}' and '${targetId}' not found`,
     };
   }
 
+  const edgeId = edgeIds[0];
   const attrs = graph.getEdgeAttributes(edgeId);
 
   return {

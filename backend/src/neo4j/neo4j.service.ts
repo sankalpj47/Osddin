@@ -32,9 +32,12 @@ export class Neo4jService implements OnModuleInit, OnModuleDestroy {
       await this.redisService.onKeyExpiration(async (key: string) => {
         key = key.replace(regexp`^${this.redisService.keyPrefix}`, '');
         if (key.startsWith('user:')) return;
-        const session = this.getSession();
-        await session.run(GRAPH_DROP_QUERY, { graphName: key });
-        await this.releaseSession(session);
+        const exists = await this.graphExists(key);
+        if (exists) {
+          const session = this.getSession();
+          await session.run(GRAPH_DROP_QUERY, { graphName: key });
+          await this.releaseSession(session);
+        }
       });
     } catch (error) {
       this.logger.error('Database not connected');

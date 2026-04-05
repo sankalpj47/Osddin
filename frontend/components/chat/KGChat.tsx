@@ -284,6 +284,15 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
     }
 
     onChatOpen?.(true);
+    
+    // Get currently selected nodes from KG store
+    const selectedNodes = useKGStore.getState().selectedNodes || [];
+    const graph = useKGStore.getState().sigmaInstance?.getGraph();
+    const selectedNodeContext = selectedNodes.map(nodeId => {
+      const label = graph?.getNodeAttribute(nodeId, 'label') || nodeId;
+      return { id: nodeId, label };
+    });
+
     sendMessage(
       { text: message.text, files: message.files },
       {
@@ -291,6 +300,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
           model,
           sessionId,
           userId: getUserId(),
+          selectedNodeContext,
         },
       },
     );

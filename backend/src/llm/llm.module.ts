@@ -16,12 +16,12 @@ import Redis from 'ioredis';
           {
             name: 'short',
             ttl: 10000, // 10 seconds
-            limit: 3,
+            limit: 20,
           },
           {
             name: 'long',
             ttl: 60000, // 1 minute
-            limit: 20,
+            limit: 40,
           },
         ],
         storage: new ThrottlerStorageRedisService(
