@@ -1,26 +1,27 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { ClickHouseClient, createClient } from '@clickhouse/client';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { ConfigService } from '@nestjs/config/dist/config.service';
 import {
-  TopGene,
-  TargetDiseaseAssociationTable,
-  OrderByEnum,
-  Pagination,
-  ScoredKeyValue,
-  TargetDiseaseAssociationRow,
   DataRequired,
   GeneProperty,
   GenePropertyCategoryEnum,
   GenePropertyData,
+  OrderByEnum,
+  Pagination,
+  ScoredKeyValue,
+  TargetDiseaseAssociationRow,
+  TargetDiseaseAssociationTable,
+  TopGene,
 } from '@/graphql/models';
+import { ClickHouseClient, createClient } from '@clickhouse/client';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { promises as fs } from 'fs';
 import { GraphQLError } from 'graphql/error/GraphQLError';
+import { join } from 'node:path';
 
 @Injectable()
 export class ClickhouseService implements OnApplicationBootstrap {
   private client: ClickHouseClient;
   private readonly logger = new Logger(ClickhouseService.name);
+  private readonly scoredValueDelimiter = ';';
 
   constructor(private readonly configService: ConfigService) {
     this.client = createClient({
@@ -34,19 +35,18 @@ export class ClickhouseService implements OnApplicationBootstrap {
     await this.#runMigrations();
   }
 
-  async getTopGenesByDisease(diseaseId: string, { page, limit }: Pagination): Promise<TopGene[]> {
+  async getTopGenesByDisease(diseaseId: string, limit: number): Promise<TopGene[]> {
     const query = `
       SELECT gene_name
       FROM overall_association_score
       WHERE disease_id = {diseaseId:String}
       ORDER BY score DESC
       LIMIT {limit:UInt32}
-      OFFSET {offset:UInt32}
     `;
     try {
       const resultSet = await this.client.query({
         query,
-        query_params: { diseaseId, limit, offset: (page - 1) * limit },
+        query_params: { diseaseId, limit },
         format: 'JSONEachRow',
       });
 
@@ -69,8 +69,9 @@ export class ClickhouseService implements OnApplicationBootstrap {
     geneIds: string[],
     diseaseId: string,
     orderBy: OrderByEnum,
-    { page, limit }: Pagination,
+    pagination?: Pagination,
   ): Promise<TargetDiseaseAssociationTable> {
+    const { page, limit } = this.#resolvePagination(pagination);
     const offset = (page - 1) * limit;
 
     // Determine if we should order by overall score or by a specific datasource
@@ -85,7 +86,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
           gene_id,
           gene_name,
           disease_id,
-          groupArray(concat(datasource_id, ',', toString(datasource_score))) AS datasourceScores,
+          groupArray(concat(datasource_id, ';', toString(datasource_score))) AS datasourceScores,
           overall_score,
           count() OVER () AS total_count
         FROM mv_datasource_association_score_overall_association_score
@@ -106,7 +107,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
           gene_name,
           disease_id,
           maxIf(datasource_score, datasource_id = {orderBy:String}) AS datasource_order_score,
-          groupArray(concat(datasource_id, ',', toString(datasource_score))) AS datasourceScores,
+          groupArray(concat(datasource_id, ';', toString(datasource_score))) AS datasourceScores,
           overall_score,
           count() OVER () AS total_count
         FROM mv_datasource_association_score_overall_association_score
@@ -154,13 +155,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
           }
 
           // Transform datasourceScores from string array to object array
-          const datasourceScores = data.datasourceScores.map((scoreStr: string) => {
-            const [key, score] = scoreStr.split(',');
-            return {
-              key,
-              score: Number.parseFloat(score),
-            };
-          });
+          const datasourceScores = this.#parseScoredKeyValues(data.datasourceScores);
 
           results.push({
             target: {
@@ -183,11 +178,85 @@ export class ClickhouseService implements OnApplicationBootstrap {
     }
   }
 
+  async getTargetPrioritizationTable(
+    geneIds: string[],
+    diseaseId: string,
+    pagination?: Pagination,
+  ): Promise<TargetDiseaseAssociationTable> {
+    const { page, limit } = this.#resolvePagination(pagination);
+    const offset = (page - 1) * limit;
+
+    const query = `
+      SELECT
+        selected_genes.gene_id,
+        coalesce(oas.gene_name, selected_genes.gene_id) AS gene_name,
+        ifNull(oas.score, 0) AS overall_score,
+        count() OVER () AS total_count
+      FROM (
+        SELECT arrayJoin({geneIds:Array(String)}) AS gene_id
+      ) AS selected_genes
+      LEFT JOIN overall_association_score oas
+        ON oas.gene_id = selected_genes.gene_id
+        AND oas.disease_id = {diseaseId:String}
+      ORDER BY overall_score DESC, gene_name ASC
+      LIMIT {limit:UInt32}
+      OFFSET {offset:UInt32}
+    `;
+
+    try {
+      const resultSet = await this.client.query({
+        query,
+        query_params: {
+          geneIds,
+          diseaseId,
+          limit,
+          offset,
+        },
+        format: 'JSONEachRow',
+      });
+
+      const results: TargetDiseaseAssociationRow[] = [];
+      let totalCount = 0;
+
+      for await (const rows of resultSet.stream<{
+        gene_id: string;
+        gene_name: string;
+        overall_score: number;
+        total_count: number;
+      }>()) {
+        for (const row of rows) {
+          const data = row.json();
+
+          if (totalCount === 0) {
+            totalCount = data.total_count;
+          }
+
+          results.push({
+            target: {
+              id: data.gene_id,
+              name: data.gene_name,
+            },
+            datasourceScores: [],
+            overall_score: data.overall_score,
+          });
+        }
+      }
+
+      return {
+        rows: results,
+        totalCount,
+      };
+    } catch (error) {
+      this.logger.error('targetPrioritizationTable query failed', error);
+      throw error;
+    }
+  }
+
   async getBatchPrioritizationTable(geneIds: string[]): Promise<Map<string, ScoredKeyValue[]>> {
     const query = `
       SELECT
         gene_id,
-        groupArray(concat(property_name, ',', toString(score))) AS properties
+        groupArray(concat(property_name, ';', toString(score))) AS properties
       FROM target_prioritization_factors
       WHERE gene_id IN ({geneIds:Array(String)})
       GROUP BY gene_id
@@ -205,14 +274,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
       for await (const rows of resultSet.stream<{ gene_id: string; properties: string[] }>()) {
         for (const row of rows) {
           const data = row.json();
-          // Transform properties from string array to ScoredKeyValue array
-          const scoredKeyValues = data.properties.map((propStr: string) => {
-            const [key, score] = propStr.split(',');
-            return {
-              key,
-              score: Number.parseFloat(score),
-            };
-          });
+          const scoredKeyValues = this.#parseScoredKeyValues(data.properties);
 
           resultMap.set(data.gene_id, scoredKeyValues);
         }
@@ -238,7 +300,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
         case GenePropertyCategoryEnum.DIFFERENTIAL_EXPRESSION: {
           if (diseaseId) {
             query = `
-              SELECT gene_id, groupArray(concat(property_name, ',', toString(score))) AS properties
+              SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
               FROM differential_expression
               WHERE disease_id = {diseaseId:String}
                 AND gene_id IN ({geneIds:Array(String)})
@@ -247,7 +309,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
             `;
             queryParams = { geneIds, diseaseId, properties };
           } else {
-            throw new GraphQLError('Disease ID is required for DEG category', {
+            throw new GraphQLError('Disease ID is required for LogFC category', {
               extensions: { code: 'BAD_USER_INPUT' },
             });
           }
@@ -259,7 +321,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
             const dataSourceProperties = properties.filter((prop) => prop !== 'Overall_Association Score');
             if (dataSourceProperties.length === properties.length) {
               query = `
-                SELECT gene_id, groupArray(concat(datasource_id, ',', toString(score))) AS properties
+                SELECT gene_id, groupArray(concat(datasource_id, ';', toString(score))) AS properties
                 FROM datasource_association_score
                 WHERE disease_id = {diseaseId:String}
                 AND gene_id IN ({geneIds:Array(String)})
@@ -269,7 +331,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
               queryParams = { geneIds, diseaseId, properties };
             } else if (dataSourceProperties.length === 0) {
               query = `
-                SELECT gene_id, groupArray(concat('Overall_Association Score,', toString(score))) AS properties
+                SELECT gene_id, groupArray(concat('Overall_Association Score;', toString(score))) AS properties
                 FROM overall_association_score
                 WHERE disease_id = {diseaseId:String}
                 AND gene_id IN ({geneIds:Array(String)})
@@ -278,14 +340,14 @@ export class ClickhouseService implements OnApplicationBootstrap {
               queryParams = { geneIds, diseaseId };
             } else {
               query = `
-                SELECT gene_id, groupArray(concat(datasource_id, ',', toString(score))) AS properties
+                SELECT gene_id, groupArray(concat(datasource_id, ';', toString(score))) AS properties
                 FROM datasource_association_score
                 WHERE disease_id = {diseaseId:String}
                 AND gene_id IN ({geneIds:Array(String)})
                 AND datasource_id IN ({properties:Array(String)})
                 GROUP BY gene_id
                 UNION ALL
-                SELECT gene_id, groupArray(concat('Overall_Association Score,', toString(score))) AS properties
+                SELECT gene_id, groupArray(concat('Overall_Association Score;', toString(score))) AS properties
                 FROM overall_association_score
                 WHERE disease_id = {diseaseId:String}
                 AND gene_id IN ({geneIds:Array(String)})
@@ -301,9 +363,28 @@ export class ClickhouseService implements OnApplicationBootstrap {
           break;
         }
 
+        case GenePropertyCategoryEnum.GENETICS: {
+          if (diseaseId) {
+            query = `
+              SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
+              FROM genetics
+              WHERE disease_id = {diseaseId:String}
+                AND gene_id IN ({geneIds:Array(String)})
+                AND property_name IN ({properties:Array(String)})
+              GROUP BY gene_id
+            `;
+            queryParams = { geneIds, diseaseId, properties };
+          } else {
+            throw new GraphQLError('Disease ID is required for Genetics category', {
+              extensions: { code: 'BAD_USER_INPUT' },
+            });
+          }
+          break;
+        }
+
         case GenePropertyCategoryEnum.OT_PRIORITIZATION: {
           query = `
-            SELECT gene_id, groupArray(concat(property_name, ',', toString(score))) AS properties
+            SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
             FROM target_prioritization_factors
             WHERE gene_id IN ({geneIds:Array(String)})
             AND property_name IN ({properties:Array(String)})
@@ -316,7 +397,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
 
         case GenePropertyCategoryEnum.PATHWAY: {
           query = `
-            SELECT gene_id, groupArray(concat(property_name, ',', toString(score))) AS properties
+            SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
             FROM pathway
             WHERE gene_id IN ({geneIds:Array(String)})
             AND property_name IN ({properties:Array(String)})
@@ -329,7 +410,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
 
         case GenePropertyCategoryEnum.DRUGGABILITY: {
           query = `
-            SELECT gene_id, groupArray(concat(property_name, ',', toString(score))) AS properties
+            SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
             FROM druggability
             WHERE gene_id IN ({geneIds:Array(String)})
             AND property_name IN ({properties:Array(String)})
@@ -343,7 +424,7 @@ export class ClickhouseService implements OnApplicationBootstrap {
         case GenePropertyCategoryEnum.TISSUE_EXPRESSION: {
           // TISSUE_EXPRESSION
           query = `
-            SELECT gene_id, groupArray(concat(property_name, ',', toString(score))) AS properties
+            SELECT gene_id, groupArray(concat(property_name, ';', toString(score))) AS properties
             FROM tissue_specificity
             WHERE gene_id IN ({geneIds:Array(String)})
             AND property_name IN ({properties:Array(String)})
@@ -369,15 +450,12 @@ export class ClickhouseService implements OnApplicationBootstrap {
         for await (const rows of resultSet.stream<{ gene_id: string; properties: string[] }>()) {
           for (const row of rows) {
             const data = row.json();
-            const properties = data.properties.map((propStr: string) => {
-              const [key, score] = propStr.split(',');
-              return {
-                key,
-                score: Number.parseFloat(score),
-                category,
-                diseaseId,
-              };
-            });
+            const properties = this.#parseScoredKeyValues(data.properties).map(({ key, score }) => ({
+              key,
+              score,
+              category,
+              diseaseId,
+            }));
 
             if (!genePropertyMap.has(data.gene_id)) {
               genePropertyMap.set(data.gene_id, []);
@@ -426,18 +504,23 @@ export class ClickhouseService implements OnApplicationBootstrap {
       if (lastAppliedVersion && Number(version) <= Number(lastAppliedVersion)) {
         continue; // Skip already applied migrations
       }
-      const sql = await fs.readFile(join(migrationDir, file), 'utf8');
+      const sql = (await fs.readFile(join(migrationDir, file), 'utf8'))
+        .split('\n')
+        .filter((line) => line && !line.startsWith('--'))
+        .join('\n');
       this.logger.log(`Running migration ${file}...`);
       try {
-        sql.split(';').forEach(async (stmt) => {
+        for (const stmt of sql.split(';')) {
+          if (!stmt.trim()) continue;
           await this.client.command({
             query: stmt.trim(),
           });
-        });
+        }
         await this.#markMigrationAsApplied(version);
         this.logger.log(`Migration ${file} applied.`);
       } catch (err) {
-        this.logger.error(`Migration ${file} failed: ${err?.message || err}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        this.logger.error(`Migration ${file} failed: ${errorMessage}`);
       }
     }
   }
@@ -456,6 +539,23 @@ export class ClickhouseService implements OnApplicationBootstrap {
       table: 'migrations',
       values: [{ version }],
       format: 'JSONEachRow',
+    });
+  }
+
+  #resolvePagination(pagination?: Pagination): Required<Pagination> {
+    return {
+      page: pagination?.page ?? 1,
+      limit: pagination?.limit ?? 25,
+    };
+  }
+
+  #parseScoredKeyValues(values: string[]): ScoredKeyValue[] {
+    return values.map((value) => {
+      const [key, score] = value.split(this.scoredValueDelimiter);
+      return {
+        key,
+        score: Number.parseFloat(score),
+      };
     });
   }
 }

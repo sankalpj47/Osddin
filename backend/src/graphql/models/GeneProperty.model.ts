@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { ScoredKeyValue } from './TargetDiseaseAssociation.model';
+import { ScoredKeyValue } from './ScoredKeyValue.model';
 
 @ObjectType()
 export class GeneProperty {
@@ -25,6 +25,7 @@ export enum GenePropertyCategoryEnum {
   OT_PRIORITIZATION = 'OT_Prioritization',
   PATHWAY = 'Pathway',
   DRUGGABILITY = 'Druggability',
+  GENETICS = 'Genetics',
   TISSUE_EXPRESSION = 'TE',
 }
 

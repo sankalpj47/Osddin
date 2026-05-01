@@ -1,13 +1,5 @@
 import { Field, ObjectType, Float, ID, Int } from '@nestjs/graphql';
-
-@ObjectType()
-export class ScoredKeyValue {
-  @Field(() => String)
-  key: string;
-
-  @Field(() => Float)
-  score: number;
-}
+import { ScoredKeyValue } from './ScoredKeyValue.model';
 
 @ObjectType()
 export class Target {
@@ -17,12 +9,13 @@ export class Target {
   @Field(() => String)
   name: string;
 
+  @Field(() => [ScoredKeyValue])
   prioritization?: ScoredKeyValue[];
 }
 
 @ObjectType()
 export class TargetDiseaseAssociationRow {
-  @Field()
+  @Field(() => Target)
   target: Target;
 
   @Field(() => [ScoredKeyValue])

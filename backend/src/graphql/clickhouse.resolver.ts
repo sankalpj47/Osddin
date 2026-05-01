@@ -1,16 +1,16 @@
 import { ClickhouseService } from '@/clickhouse/clickhouse.service';
-import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { DataLoaderService } from '@/dataloader';
+import { Args, Int, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
-  TopGene,
+  DataRequired,
+  GeneProperty,
   OrderByEnum,
   ScoredKeyValue,
   Target,
   TargetDiseaseAssociationTable,
-  DataRequired,
-  GeneProperty,
+  TopGene,
 } from './models';
 import { Pagination } from './models/Pagination.input';
-import { DataLoaderService } from '@/dataloader';
 
 @Resolver()
 export class ClickhouseResolver {
@@ -19,31 +19,35 @@ export class ClickhouseResolver {
   @Query(() => [TopGene])
   async topGenesByDisease(
     @Args('diseaseId', { type: () => String }) diseaseId: string,
-    @Args('page', { type: () => Pagination, nullable: true }) pagination: Pagination,
-  ) {
-    if (pagination.page < 1) {
-      pagination.page = 1;
-    }
-    if (pagination.limit < 1) {
-      pagination.limit = 25; // Default limit
-    }
-    return this.clickhouseService.getTopGenesByDisease(diseaseId, pagination);
+    @Args('limit', { type: () => Int, defaultValue: 25 }) limit: number,
+  ): Promise<TopGene[]> {
+    return this.clickhouseService.getTopGenesByDisease(diseaseId, limit);
   }
 
   @Query(() => TargetDiseaseAssociationTable)
   async targetDiseaseAssociationTable(
     @Args('geneIds', { type: () => [String] }) geneIds: string[],
     @Args('diseaseId', { type: () => String }) diseaseId: string,
-    @Args('orderBy', { type: () => OrderByEnum, defaultValue: OrderByEnum.SCORE, nullable: true }) orderBy: OrderByEnum,
-    @Args('page', { type: () => Pagination, nullable: true }) pagination: Pagination,
+    @Args('orderBy', {
+      type: () => OrderByEnum,
+      defaultValue: OrderByEnum.SCORE,
+      nullable: true,
+    })
+    orderBy: OrderByEnum,
+    @Args('page', { type: () => Pagination, nullable: true })
+    pagination?: Pagination,
   ) {
-    if (pagination.page < 1) {
-      pagination.page = 1;
-    }
-    if (pagination.limit < 1) {
-      pagination.limit = 25; // Default limit
-    }
     return this.clickhouseService.getTargetDiseaseAssociationTable(geneIds, diseaseId, orderBy, pagination);
+  }
+
+  @Query(() => TargetDiseaseAssociationTable)
+  async targetPrioritizationTable(
+    @Args('geneIds', { type: () => [String] }) geneIds: string[],
+    @Args('diseaseId', { type: () => String }) diseaseId: string,
+    @Args('page', { type: () => Pagination, nullable: true })
+    pagination?: Pagination,
+  ) {
+    return this.clickhouseService.getTargetPrioritizationTable(geneIds, diseaseId, pagination);
   }
 
   @Query(() => [GeneProperty])

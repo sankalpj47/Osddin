@@ -16,14 +16,17 @@ export interface TopGeneVariables {
   /**
    * Pagination
    */
-  page: {
-    /**
-     * Page number
-     */
-    page: number;
-    /**
-     * Limit of items per page
-     */
-    limit: number;
-  };
+
+  limit: number;
+
+  // page: {
+  //   /**
+  //    * Page number
+  //    */
+  //   page: number;
+  //   /**
+  //    * Limit of items per page
+  //    */
+  //   limit: number;
+  // };
 }

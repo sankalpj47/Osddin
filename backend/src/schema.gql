@@ -51,6 +51,7 @@ type GeneProperty {
 enum GenePropertyCategoryEnum {
   DIFFERENTIAL_EXPRESSION
   DRUGGABILITY
+  GENETICS
   OPEN_TARGETS
   OT_PRIORITIZATION
   PATHWAY
@@ -67,6 +68,7 @@ type GenePropertyData {
 type Headers {
   differentialExpression: [Description!]
   druggability: [Description!]
+  genetics: [Description!]
   openTargets: [Description!]
   pathway: [Description!]
   targetPrioritization: [Description!]
@@ -124,7 +126,8 @@ type Query {
   getGeneInteractions(input: InteractionInput!, order: Int!): GeneInteractionOutput!
   headers(diseaseId: String!): Headers!
   targetDiseaseAssociationTable(diseaseId: String!, geneIds: [String!]!, orderBy: OrderByEnum = SCORE, page: Pagination): TargetDiseaseAssociationTable!
-  topGenesByDisease(diseaseId: String!, page: Pagination): [TopGene!]!
+  targetPrioritizationTable(diseaseId: String!, geneIds: [String!]!, page: Pagination): TargetDiseaseAssociationTable!
+  topGenesByDisease(diseaseId: String!, limit: Int! = 25): [TopGene!]!
 }
 
 type ScoredKeyValue {

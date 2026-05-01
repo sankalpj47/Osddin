@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 export const GENE_VERIFICATION_QUERY = gql`
   query GeneVerification($geneIDs: [String!]!) {
-    genes(geneIDs: $geneIDs ) {
+    genes(geneIDs: $geneIDs) {
       ID
       Gene_name
       Description
@@ -14,18 +14,9 @@ export const GENE_VERIFICATION_QUERY = gql`
 `;
 
 export const GENE_GRAPH_QUERY = gql`
-  query GeneGraph(
-    $geneIDs: [String!]!
-    $minScore: Float!
-    $order: Int!
-    $interactionType: [String!]!
-  ) {
+  query GeneGraph($geneIDs: [String!]!, $minScore: Float!, $order: Int!, $interactionType: [String!]!) {
     getGeneInteractions(
-      input: {
-        geneIDs: $geneIDs
-        minScore: $minScore
-        interactionType: $interactionType
-      }
+      input: { geneIDs: $geneIDs, minScore: $minScore, interactionType: $interactionType }
       order: $order
     ) {
       genes {
@@ -40,7 +31,6 @@ export const GENE_GRAPH_QUERY = gql`
         typeScores
       }
       graphName
-      averageClusteringCoefficient
     }
   }
 `;
@@ -60,13 +50,17 @@ export const GENE_PROPERTIES_QUERY = gql`
 `;
 
 export const GET_HEADERS_QUERY = gql`
-  query GetHeaders($diseaseId: String!, $skipCommon: Boolean!) {
+    query GetHeaders($diseaseId: String!, $skipCommon: Boolean!) {
     headers(diseaseId: $diseaseId) {
       differentialExpression {
         name
         description
       }
       openTargets @skip(if: $skipCommon) {
+        name
+        description
+      }
+      genetics {
         name
         description
       }
@@ -91,8 +85,8 @@ export const GET_HEADERS_QUERY = gql`
 `;
 
 export const TOP_GENES_QUERY = gql`
-  query TopGenesByDisease($diseaseId: String!, $page: Pagination!) {
-    topGenesByDisease(diseaseId: $diseaseId, page: $page) {
+  query TopGenesByDisease($diseaseId: String!, $limit: Int!) {
+    topGenesByDisease(diseaseId: $diseaseId, limit: $limit) {
       gene_name
     }
   }
@@ -100,16 +94,11 @@ export const TOP_GENES_QUERY = gql`
 
 export const OPENTARGET_HEATMAP_QUERY = gql`
   query OpenTargetsTable($diseaseId: String!, $geneIds: [String!]!, $orderBy: OrderByEnum!, $page: Pagination!) {
-    targetDiseaseAssociationTable(
-      diseaseId: $diseaseId,
-      geneIds: $geneIds,
-      orderBy: $orderBy,
-      page: $page
-    ) {
+    targetDiseaseAssociationTable(diseaseId: $diseaseId, geneIds: $geneIds, orderBy: $orderBy, page: $page) {
       rows {
         target {
-        name
-        prioritization {
+          name
+          prioritization {
             key
             score
           }
@@ -117,6 +106,20 @@ export const OPENTARGET_HEATMAP_QUERY = gql`
         datasourceScores {
           key
           score
+        }
+        overall_score
+      }
+      totalCount
+    }
+    targetPrioritizationTable(diseaseId: $diseaseId, geneIds: $geneIds, page: $page) {
+      rows {
+        target {
+          id
+          name
+          prioritization {
+            key
+            score
+          }
         }
         overall_score
       }

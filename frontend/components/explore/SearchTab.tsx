@@ -64,6 +64,9 @@ export function SearchTab() {
   const [showAlert, setShowAlert] = React.useState(false);
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [autofillLoading, setAutofillLoading] = React.useState(false);
+   // Use string for input box, number for fetch
+  const [autofillNum, setAutofillNum] = React.useState<string>('25');
+
   const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
 
   React.useEffect(() => {
@@ -74,15 +77,20 @@ export function SearchTab() {
   const handleAutofill = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    
+    const num = Number(autofillNum);
+    if (!autofillNum || Number.isNaN(num) || num < 1) {
+      toast.error('Please enter a valid number greater than 0', {
+        cancel: { label: 'Close', onClick() {} },
+      });
+      return;
+    }
     setAutofillLoading(true);
     try {
       const { data: tg } = await fetchTopGenes({
         variables: {
           diseaseId: formData.diseaseMap,
-          page: {
-            page: 1,
-            limit: Number.parseInt(fd.get('autofill-num') as string, 10),
-          },
+          limit: Number.parseInt(fd.get('autofill-num') as string, 10),
         },
       });
       if (tg?.topGenesByDisease) {
@@ -97,6 +105,17 @@ export function SearchTab() {
       setAutofillLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (diseaseData && formData.seedGenes === '') {
+      fetchTopGenes({ variables: {
+        diseaseId: formData.diseaseMap,
+        limit: 25,
+      } });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diseaseData, fetchTopGenes, formData.diseaseMap, formData.seedGenes]);
+
 
   const handleSubmit = async () => {
     const { seedGenes, interactionType } = formData;
@@ -135,7 +154,19 @@ export function SearchTab() {
     setTableOpen(true);
   };
 
-  const handleSelect = (val: string, key: string) => setFormData({ ...formData, [key]: val });
+  const handleSelect = (val: string, key: string) => {
+    setFormData(prev => {
+      if (key === 'diseaseMap') {
+        setAutofillNum('25');
+        fetchTopGenes({ variables: {
+          diseaseId: val,
+          limit: 25,
+        } });
+        return { ...prev, [key]: val };
+      }
+      return { ...prev, [key]: val };
+    });
+  };
 
   const handleFileRead = async (event: ChangeEvent<HTMLTextAreaElement>) => {
     setFormData({ ...formData, seedGenes: event.target.value });
@@ -249,7 +280,8 @@ export function SearchTab() {
                 min={1}
                 className='h-8 w-16 sm:w-20'
                 placeholder='25'
-                defaultValue={25}
+                value={autofillNum}
+                onChange={e => setAutofillNum(e.target.value)}
                 disabled={autofillLoading || topGenesLoading}
               />
               <Button
