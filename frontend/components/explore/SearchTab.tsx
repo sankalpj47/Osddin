@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { graphConfig } from '@/lib/data';
@@ -35,6 +36,8 @@ import type {
   TopGeneVariables,
 } from '@/lib/interface';
 import { distinct, envURL } from '@/lib/utils';
+
+const DEFAULT_AUTOFILL_GENE_LIMIT = 25;
 
 export function SearchTab() {
   const [verifyGenes, { data, loading }] = useLazyQuery<GeneVerificationData, GeneVerificationVariables>(
@@ -52,7 +55,7 @@ export function SearchTab() {
   }, []);
 
   const [formData, setFormData] = React.useState<GraphConfigForm>({
-    seedGenes: 'MAPT, STX6, EIF2AK3, MOBP, DCTN1, LRRK2',
+    seedGenes: '',
     diseaseMap: 'MONDO_0004976',
     order: '0',
     interactionType: ['PPI', 'INT_ACT', 'BIO_GRID'],
@@ -63,59 +66,118 @@ export function SearchTab() {
   const [geneIDs, setGeneIDs] = React.useState<string[]>([]);
   const [showAlert, setShowAlert] = React.useState(false);
   const [historyOpen, setHistoryOpen] = React.useState(false);
-  const [autofillLoading, setAutofillLoading] = React.useState(false);
-   // Use string for input box, number for fetch
-  const [autofillNum, setAutofillNum] = React.useState<string>('25');
-
+  const [autofillEnabled, setAutofillEnabled] = React.useState(true);
+  const [autofillGeneLimit, setAutofillGeneLimit] = React.useState(DEFAULT_AUTOFILL_GENE_LIMIT);
+  const [autofillGeneLimitInput, setAutofillGeneLimitInput] = React.useState<string>(
+    String(DEFAULT_AUTOFILL_GENE_LIMIT),
+  );
+  const [pendingAutofillDiseaseId, setPendingAutofillDiseaseId] = React.useState<string | null>('MONDO_0004976');
   const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
+  const autofillRequestIdRef = React.useRef(0);
+  const autofillEnabledRef = React.useRef(true);
 
   React.useEffect(() => {
     setHistory(JSON.parse(localStorage.getItem('history') ?? '[]'));
     // Dialog handles Escape key internally
   }, []);
 
-  const handleAutofill = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    
-    const num = Number(autofillNum);
-    if (!autofillNum || Number.isNaN(num) || num < 1) {
-      toast.error('Please enter a valid number greater than 0', {
-        cancel: { label: 'Close', onClick() {} },
-      });
-      return;
-    }
-    setAutofillLoading(true);
-    try {
-      const { data: tg } = await fetchTopGenes({
-        variables: {
-          diseaseId: formData.diseaseMap,
-          limit: Number.parseInt(fd.get('autofill-num') as string, 10),
-        },
-      });
-      if (tg?.topGenesByDisease) {
-        const genes: string[] = tg.topGenesByDisease.map((g: { gene_name: string }) => g.gene_name);
-        setFormData(f => ({ ...f, seedGenes: genes.join(', ') }));
+  const applyAutofill = React.useCallback(
+    async (diseaseId: string) => {
+      const requestId = ++autofillRequestIdRef.current;
+      try {
+        const { data: topGeneData } = await fetchTopGenes({
+          variables: {
+            diseaseId,
+            limit: autofillGeneLimit,
+          },
+        });
+
+        if (requestId !== autofillRequestIdRef.current || !autofillEnabledRef.current) {
+          return;
+        }
+
+        const genes = topGeneData?.topGenesByDisease.map(({ gene_name }) => gene_name).filter(Boolean) ?? [];
+
+        setFormData(prev => {
+          if (prev.diseaseMap !== diseaseId) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            seedGenes: genes.join(', '),
+          };
+        });
+        setUploadedFile(null);
+
+        if (genes.length === 0) {
+          toast.error('No seed genes found for the selected disease', {
+            cancel: { label: 'Close', onClick() {} },
+          });
+        }
+      } catch {
+        if (requestId !== autofillRequestIdRef.current || !autofillEnabledRef.current) {
+          return;
+        }
+
+        toast.error('Failed to autofill genes from API', {
+          cancel: { label: 'Close', onClick() {} },
+        });
       }
-    } catch {
-      toast.error('Failed to autofill genes from API', {
-        cancel: { label: 'Close', onClick() {} },
-      });
-    } finally {
-      setAutofillLoading(false);
-    }
-  };
+    },
+    [autofillGeneLimit, fetchTopGenes],
+  );
 
   React.useEffect(() => {
-    if (diseaseData && formData.seedGenes === '') {
-      fetchTopGenes({ variables: {
-        diseaseId: formData.diseaseMap,
-        limit: 25,
-      } });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diseaseData, fetchTopGenes, formData.diseaseMap, formData.seedGenes]);
+    autofillEnabledRef.current = autofillEnabled;
 
+    if (!autofillEnabled) {
+      autofillRequestIdRef.current += 1;
+      setPendingAutofillDiseaseId(null);
+      return;
+    }
+
+    // When enabling autofill or when disease changes, request autofill immediately.
+    setPendingAutofillDiseaseId(formData.diseaseMap);
+  }, [autofillEnabled, formData.diseaseMap]);
+
+  // Debounce the numeric input so rapid typing doesn't trigger re-renders or API requests.
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      const parsed = Number.parseInt(autofillGeneLimitInput, 10);
+      const clamped = Number.isNaN(parsed)
+        ? DEFAULT_AUTOFILL_GENE_LIMIT
+        : Math.min(1000, Math.max(1, parsed));
+
+      if (clamped !== autofillGeneLimit) {
+        setAutofillGeneLimit(clamped);
+
+        // Only trigger autofill when enabled; setPendingAutofillDiseaseId will kick the fetch effect.
+        if (autofillEnabled) {
+          setPendingAutofillDiseaseId(formData.diseaseMap);
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(t);
+  }, [autofillGeneLimitInput, autofillEnabled, formData.diseaseMap, autofillGeneLimit]);
+
+  React.useEffect(() => {
+    if (!autofillEnabled) {
+      return;
+    }
+
+    setPendingAutofillDiseaseId(formData.diseaseMap);
+  }, [autofillEnabled, autofillGeneLimit, formData.diseaseMap]);
+
+  React.useEffect(() => {
+    if (!autofillEnabled || !pendingAutofillDiseaseId) {
+      return;
+    }
+
+    void applyAutofill(pendingAutofillDiseaseId);
+    setPendingAutofillDiseaseId(null);
+  }, [applyAutofill, autofillEnabled, pendingAutofillDiseaseId]);
 
   const handleSubmit = async () => {
     const { seedGenes, interactionType } = formData;
@@ -155,17 +217,10 @@ export function SearchTab() {
   };
 
   const handleSelect = (val: string, key: string) => {
-    setFormData(prev => {
-      if (key === 'diseaseMap') {
-        setAutofillNum('25');
-        fetchTopGenes({ variables: {
-          diseaseId: val,
-          limit: 25,
-        } });
-        return { ...prev, [key]: val };
-      }
-      return { ...prev, [key]: val };
-    });
+    if (key === 'diseaseMap' && autofillEnabled) {
+      setPendingAutofillDiseaseId(val);
+    }
+    setFormData(prev => ({ ...prev, [key]: val }));
   };
 
   const handleFileRead = async (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -218,7 +273,7 @@ export function SearchTab() {
     window.open('/network', '_blank', 'noopener,noreferrer');
   };
 
-  const autoFillNumId = useId();
+  const autoFillToggleId = useId();
   const seedGenesId = useId();
   const seedFileId = useId();
 
@@ -248,58 +303,55 @@ export function SearchTab() {
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-end xl:flex-row xl:items-center'>
           <div className='mr-4 flex flex-col gap-3 sm:flex-row sm:items-center'>
             <div className='flex items-center gap-2'>
-              <Label className='whitespace-nowrap text-sm'>Autofill Seed Genes</Label>
+              <Label htmlFor={autoFillToggleId} className='whitespace-nowrap text-sm'>
+                Autofill Seed Genes
+              </Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <InfoIcon size={12} />
                 </TooltipTrigger>
                 <TooltipContent className='max-w-xs'>
                   <div>
-                    <div>
-                      <b>Autofill</b> the seed genes box with the top <b>n</b> genes for the selected disease.
-                    </div>
+                    <div>Automatically fills the seed genes box with the top 25 genes for the selected disease.</div>
                     <div>Genes are ranked by overall association score from the OpenTargets platform.</div>
-                    <div>
-                      <b>Note:</b> Autofill uses only one type of gene identifier as returned by the API.
-                    </div>
+                    <div>When enabled, changing the disease refreshes the seed genes automatically.</div>
                   </div>
                 </TooltipContent>
               </Tooltip>
             </div>
-
-            <form onSubmit={handleAutofill} className='flex items-center gap-2'>
-              <Label htmlFor={autoFillNumId} className='text-sm'>
-                No. of genes
+            <div className='flex items-center gap-2'>
+              <Switch id={autoFillToggleId} checked={autofillEnabled} onCheckedChange={setAutofillEnabled} />
+              {/* <span className='text-muted-foreground text-xs sm:text-sm'>
+                {topGenesLoading ? `Loading top ${autofillGeneLimit} genes...` : `Top ${autofillGeneLimit} genes`}
+              </span> */}
+            </div>
+            <div className='flex items-center gap-2'>
+              <Label htmlFor='autofill-gene-limit' className='whitespace-nowrap text-sm'>
+                Limit
               </Label>
               <Input
-                id={autoFillNumId}
+                id='autofill-gene-limit'
                 type='number'
-                inputMode='numeric'
-                required
-                name='autofill-num'
                 min={1}
-                className='h-8 w-16 sm:w-20'
-                placeholder='25'
-                value={autofillNum}
-                onChange={e => setAutofillNum(e.target.value)}
-                disabled={autofillLoading || topGenesLoading}
+                max={1000}
+                step={1}
+                className='h-8 w-24'
+                value={autofillGeneLimitInput}
+                onChange={e => setAutofillGeneLimitInput(e.target.value)}
+                onBlur={() => {
+                  // Ensure final value is applied immediately on blur
+                  const parsed = Number.parseInt(autofillGeneLimitInput, 10);
+                  const clamped = Number.isNaN(parsed)
+                    ? DEFAULT_AUTOFILL_GENE_LIMIT
+                    : Math.min(1000, Math.max(1, parsed));
+                  if (clamped !== autofillGeneLimit) {
+                    setAutofillGeneLimit(clamped);
+                    if (autofillEnabled) setPendingAutofillDiseaseId(formData.diseaseMap);
+                  }
+                }}
+                disabled={topGenesLoading || !autofillEnabled}
               />
-              <Button
-                type='submit'
-                disabled={autofillLoading || topGenesLoading}
-                className='h-8 px-2 text-xs sm:px-3 sm:text-sm'
-              >
-                {autofillLoading || topGenesLoading ? (
-                  <>
-                    <LoaderIcon className='animate-spin' size={14} />
-                    <span className='hidden sm:inline'>Auto-filling...</span>
-                    <span className='sm:hidden'>Loading...</span>
-                  </>
-                ) : (
-                  'Autofill'
-                )}
-              </Button>
-            </form>
+            </div>
           </div>
 
           <Button variant='outline' size='sm' className='h-8 px-3 text-sm' onClick={() => setHistoryOpen(true)}>
@@ -390,7 +442,7 @@ export function SearchTab() {
             className='mt-2 h-33'
             value={formData.seedGenes}
             onChange={handleFileRead}
-            disabled={autofillLoading}
+            disabled={topGenesLoading}
             required
           />
         </div>
@@ -426,7 +478,7 @@ export function SearchTab() {
                 setFormData({ ...formData, seedGenes: text });
                 setUploadedFile(f);
               }}
-              disabled={autofillLoading}
+              disabled={topGenesLoading}
             />
             <div
               className={`cursor-pointer rounded-lg border-2 border-dashed p-3 text-center transition-all sm:p-4 ${
