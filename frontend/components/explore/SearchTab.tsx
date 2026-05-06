@@ -85,7 +85,7 @@ export function SearchTab() {
     async (diseaseId: string) => {
       const requestId = ++autofillRequestIdRef.current;
       try {
-        const { data: topGeneData } = await fetchTopGenes({
+        const result = await fetchTopGenes({
           variables: {
             diseaseId,
             limit: autofillGeneLimit,
@@ -96,7 +96,20 @@ export function SearchTab() {
           return;
         }
 
-        const genes = topGeneData?.topGenesByDisease.map(({ gene_name }) => gene_name).filter(Boolean) ?? [];
+        // Extract data from Apollo QueryResult
+        const topGeneData = result?.data;
+        
+        if (!topGeneData?.topGenesByDisease) {
+          console.warn('No topGenesByDisease in response:', { topGeneData, result });
+          toast.error('No seed genes found for the selected disease', {
+            cancel: { label: 'Close', onClick() {} },
+          });
+          return;
+        }
+
+        const genes = topGeneData.topGenesByDisease
+          .map(item => item.gene_name)
+          .filter((name): name is string => Boolean(name && name.length > 0));
 
         setFormData(prev => {
           if (prev.diseaseMap !== diseaseId) {
@@ -111,15 +124,17 @@ export function SearchTab() {
         setUploadedFile(null);
 
         if (genes.length === 0) {
+          console.warn('No valid genes extracted from response:', { topGeneData });
           toast.error('No seed genes found for the selected disease', {
             cancel: { label: 'Close', onClick() {} },
           });
         }
-      } catch {
+      } catch (error) {
         if (requestId !== autofillRequestIdRef.current || !autofillEnabledRef.current) {
           return;
         }
 
+        console.error('Failed to autofill genes:', error);
         toast.error('Failed to autofill genes from API', {
           cancel: { label: 'Close', onClick() {} },
         });
