@@ -58,7 +58,7 @@ export function SearchTab() {
     seedGenes: '',
     diseaseMap: 'MONDO_0004976',
     order: '0',
-    interactionType: ['PPI', 'INT_ACT', 'BIO_GRID'],
+    interactionType: ['PPI'],
     minScore: '0.9',
   });
   const [history, setHistory] = React.useState<HistoryItem[]>([]);
