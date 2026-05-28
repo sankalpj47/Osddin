@@ -127,13 +127,15 @@ export function LoadGraph() {
           if (!result) return;
           const geneNameToID = new Map<string, string>();
           const geneNames: string[] = [];
-          for (const gene of result.data?.genes ?? []) {
+          const verifiedGenes = result.data?.genes ?? [];
+          for (const [index, gene] of verifiedGenes.entries()) {
             geneNames.push(gene.Gene_name ?? gene.ID);
             if (gene.Gene_name) geneNameToID.set(gene.Gene_name, gene.ID);
             graph.addNode(gene.ID, {
               label: gene.Gene_name,
               ID: gene.ID,
               description: gene.Description,
+              
             });
           }
 
@@ -201,14 +203,18 @@ export function LoadGraph() {
           localStorage.setItem('graphConfig', JSON.stringify({ ...graphConfig, graphName }));
           useStore.setState({ graphConfig: { ...graphConfig, graphName } });
           const transformedData: Partial<SerializedGraph<NodeAttributes, EdgeAttributes>> = {
-            nodes: genes.map(gene => ({
-              key: gene.ID,
-              attributes: {
-                label: gene.Gene_name || '',
-                ID: gene.ID,
-                description: gene.Description || '',
-              },
-            })),
+            nodes: genes.map((gene, index) => {
+
+
+              return {
+                key: gene.ID,
+                attributes: {
+                  label: gene.Gene_name ?? gene.ID,
+                  ID: gene.ID,
+                  description: gene.Description || '',
+                },
+              };
+            }),
             edges: links.map(link => ({
               key: `${link.gene1}-${link.gene2}`,
               source: link.gene1,
@@ -219,11 +225,14 @@ export function LoadGraph() {
                 ...(link.typeScores ? { typeScores: link.typeScores } : {}),
               },
             })),
+            options: {
+              type: 'directed',
+            },
           };
           if (transformedData) {
             graph.import(transformedData);
             loadGraph(graph);
-            (sigma as EventEmitter).emit('loaded');
+           
             const geneNameToID = new Map<string, string>();
             for (const gene of genes) {
               if (gene.Gene_name) geneNameToID.set(gene.Gene_name, gene.ID);
@@ -235,7 +244,7 @@ export function LoadGraph() {
               networkStatistics: {
                 totalNodes: graph.order,
                 totalEdges: graph.size,
-                averageClusteringCoefficient,
+                averageClusteringCoefficient: averageClusteringCoefficient ?? Number.NaN,
                 ...statisticsGenerator(graph),
               },
             });
