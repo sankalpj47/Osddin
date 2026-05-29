@@ -44,6 +44,7 @@ export function SigmaContainer(
       ref={props.ref}
       className={props.className}
       settings={{
+        ...props.settings,
         allowInvalidContainer: true,
         enableEdgeEvents: true,
         defaultNodeType: 'circle',
