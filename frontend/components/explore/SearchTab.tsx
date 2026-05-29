@@ -48,9 +48,19 @@ export function SearchTab() {
 
   React.useEffect(() => {
     (async () => {
-      const response = await fetch(`${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/diseases`);
-      const d = await response.json();
-      setDiseaseData(d);
+      try {
+        const response = await fetch(`${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/diseases`);
+        if (!response.ok) {
+          console.error('Failed to fetch disease data:', response.statusText);
+          setDiseaseData([]);
+          return;
+        }
+        const d = await response.json();
+        setDiseaseData(d);
+      } catch (error) {
+        console.error('Error fetching disease data:', error);
+        setDiseaseData([]);
+      }
     })();
   }, []);
 

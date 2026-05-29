@@ -72,9 +72,7 @@ import type {
 } from './kg-chat-types';
 import { type EventMessage, Events, envURL, eventEmitter } from './utils';
 
-// ============================================================================
-// Types & Interfaces
-// ============================================================================
+
 
 export interface ToolResult<T = unknown> {
   success: boolean;

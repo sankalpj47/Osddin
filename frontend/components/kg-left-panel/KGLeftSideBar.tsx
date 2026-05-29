@@ -80,10 +80,16 @@ export function KGLeftSideBar() {
     (async () => {
       try {
         const response = await fetch(`${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/diseases`);
+        if (!response.ok) {
+          console.error('Failed to fetch disease data:', response.statusText);
+          setDiseaseData([]);
+          return;
+        }
         const data = await response.json();
         setDiseaseData(data);
       } catch (error) {
         console.error('Error fetching disease data:', error);
+        setDiseaseData([]);
       }
     })();
   }, []);

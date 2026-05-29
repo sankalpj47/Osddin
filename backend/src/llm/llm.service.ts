@@ -16,6 +16,8 @@ import { createOpenAICompatible, OpenAICompatibleProvider } from '@ai-sdk/openai
 import { tavily } from '@tavily/core';
 
 @Injectable()
+
+
 export class LlmService {
   private modelRegistry: ProviderRegistryProvider<{ nvidia: OpenAICompatibleProvider }, ':'>;
 
@@ -184,7 +186,7 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
    * Backend tool: searchBiomedicalContext (Tavily search)
    * Frontend tools: 27+ tools from kg-tools.ts (metadata only, execution client-side)
    */
-  private generateKGTools() {
+  public generateKGTools() {
     const kgTools: Record<string, any> = {};
 
     // ========================================================================

@@ -33,6 +33,7 @@ export function getModelId(key: ModelKey): ModelId {
 
 // Schema uses derived literal union of model IDs from single source of truth
 export const PromptDtoSchema = z.object({
+  text: z.string().optional(),
   model: z.enum(MODEL_ID_LIST).optional(),
   messages: z.array(z.any()).optional(),
   sessionId: z.string().optional(),

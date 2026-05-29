@@ -1,85 +1,271 @@
-import { Body, Controller, Post, HttpException, HttpStatus, Res, UseGuards } from '@nestjs/common';
-import { LlmService } from './llm.service';
-import { PromptDto, DEFAULT_MODEL } from '@/llm/model.constants';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpException,
+  HttpStatus,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+
 import type { Response } from 'express';
-import { observe, updateActiveTrace } from '@langfuse/tracing';
+
+import {
+  observe,
+  updateActiveTrace,
+} from '@langfuse/tracing';
+
+import { LlmService } from './llm.service';
+
+import {
+  LangGraphService as LangGraphLlmService,
+} from './a';
+
+import {
+  PromptDto,
+  DEFAULT_MODEL,
+} from '@/llm/model.constants';
+
 import { ThrottlerBehindProxyGuard } from './llm-throttle.guard';
+
+type TraceRequest = PromptDto & {
+  model?: string;
+  messages?: Array<unknown>;
+  userId?: string;
+  sessionId?: string;
+};
+
+type KGChatRequest = PromptDto & {
+  plan?: string;
+};
 
 @Controller('llm')
 export class LlmController {
-  constructor(private readonly llmService: LlmService) {}
+  constructor(
+    private readonly llmService: LlmService,
+
+    private readonly kgLlmService: LangGraphLlmService,
+  ) {}
+
+  private toTraceRequest(
+    promptDto: PromptDto,
+  ) {
+    return promptDto as TraceRequest;
+  }
+
+  // =========================================================
+  // NORMAL CHAT
+  // =========================================================
 
   @Post('chat')
   @UseGuards(ThrottlerBehindProxyGuard)
-  async streamResponse(@Body() promptDto: PromptDto, @Res() res: Response) {
-    // Wrap the handler with observe() to create a trace for this request
+  async streamResponse(
+    @Body() promptDto: PromptDto,
+    @Res() res: Response,
+  ) {
+    const request =
+      this.toTraceRequest(promptDto);
+
     return observe(
       async () => {
         try {
-          // Update trace with metadata, userId, and sessionId for Langfuse tracking
           updateActiveTrace({
             name: 'llm-chat-request',
-            userId: promptDto.userId,
-            sessionId: promptDto.sessionId,
+
+            userId: request.userId,
+
+            sessionId:
+              request.sessionId,
+
             metadata: {
-              model: promptDto.model || DEFAULT_MODEL,
-              messageCount: promptDto.messages?.length || 0,
+              model:
+                request.model ||
+                DEFAULT_MODEL,
+
+              messageCount:
+                request.messages
+                  ?.length || 0,
             },
           });
 
-          // Generate the AI response stream using AI SDK
-          const result = this.llmService.generateResponseStream(promptDto);
+          const result =
+            this.llmService.generateResponseStream(
+              promptDto,
+            );
 
-          // Return the AI SDK stream response directly
-          return result.pipeUIMessageStreamToResponse(res);
+          return result.pipeUIMessageStreamToResponse(
+            res,
+          );
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to generate response stream';
-          throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate response stream';
+
+          throw new HttpException(
+            errorMessage,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
       },
+
       {
         name: 'handle-llm-chat',
+
         captureInput: true,
-        captureOutput: false, // Stream responses don't capture full output
-        endOnExit: false, // Don't end the observation until the stream completes
+
+        captureOutput: false,
+
+        endOnExit: false,
       },
     )();
   }
 
-  @Post('kg-chat')
+  @Post('kg-plan')
   @UseGuards(ThrottlerBehindProxyGuard)
-  async streamKGChat(@Body() promptDto: PromptDto, @Res() res: Response) {
-    // Wrap the handler with observe() to create a trace for this request
+  async generateKGPlan(
+    @Body() promptDto: PromptDto,
+  ) {
+
+  
+    const request =
+      this.toTraceRequest(promptDto);
+      console.log("kg plan request", promptDto);
+
     return observe(
       async () => {
         try {
-          // Update trace with metadata for Langfuse tracking
           updateActiveTrace({
-            name: 'kg-chat-request',
-            userId: promptDto.userId,
-            sessionId: promptDto.sessionId,
+            name: 'kg-plan-request',
+
+            userId: request.userId,
+
+            sessionId:
+              request.sessionId,
+
             metadata: {
-              model: promptDto.model || DEFAULT_MODEL,
-              messageCount: promptDto.messages?.length || 0,
+              model:
+                request.model ||
+                DEFAULT_MODEL,
+
+              messageCount:
+                request.messages
+                  ?.length || 0,
             },
           });
 
-          // Generate the AI response stream with tool calling support
-          const result = this.llmService.generateKGChatStream(promptDto);
+          const plan =
+            await this.kgLlmService.generateKGPlan(
+              promptDto,
+            );
 
-          // Return the AI SDK stream response directly
-          // Client-side will intercept tool calls via onToolCall callback
-          return result.pipeUIMessageStreamToResponse(res);
+          return {
+            success: true,
+            plan,
+          };
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to generate KG chat stream';
-          throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate KG plan';
+
+          throw new HttpException(
+            errorMessage,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
       },
+
+      {
+        name: 'handle-kg-plan',
+
+        captureInput: true,
+
+        captureOutput: true,
+
+        endOnExit: true,
+      },
+    )();
+  }
+
+  // =========================================================
+  // KG CHAT STREAM API
+  // =========================================================
+
+  @Post('kg-chat')
+  @UseGuards(ThrottlerBehindProxyGuard)
+  async streamKGChat(
+    @Body() promptDto: KGChatRequest,
+    @Res() res: Response,
+  ) {
+    console.log("kg chat request", promptDto);
+    const request =
+      this.toTraceRequest(promptDto);
+
+    return observe(
+      async () => {
+        try {
+          updateActiveTrace({
+            name: 'kg-chat-request',
+
+            userId: request.userId,
+
+            sessionId:
+              request.sessionId,
+
+            metadata: {
+              model:
+                request.model ||
+                DEFAULT_MODEL,
+
+              messageCount:
+                request.messages
+                  ?.length || 0,
+
+              hasPlan:
+                !!promptDto.plan,
+            },
+          });
+
+          const plan =
+            promptDto.plan ??
+            `
+1. Inspect graph state
+2. Run graph tools
+3. Validate findings
+4. Synthesize response
+`;
+
+          const result =
+            await this.kgLlmService.generateKGChatStreamWithPlan(
+              promptDto,
+              plan,
+            );
+
+          return result.pipeUIMessageStreamToResponse(
+            res,
+          );
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate KG chat stream';
+
+          throw new HttpException(
+            errorMessage,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      },
+
       {
         name: 'handle-kg-chat',
+
         captureInput: true,
-        captureOutput: false, // Stream responses don't capture full output
-        endOnExit: false, // Don't end the observation until the stream completes
+
+        captureOutput: false,
+
+        endOnExit: false,
       },
     )();
   }

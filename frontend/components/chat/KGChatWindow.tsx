@@ -57,7 +57,7 @@ export function KGChatWindow() {
 
   return (
     <KGChat onChatOpen={setIsChatOpen}>
-      {({ messages, handleDeleteMessages, renderMessages, renderPromptInput }) => (
+      {({ messages, handleDeleteMessages, renderMessages, renderPromptInput, plan, planStatus, planError }) => (
         <div className='relative mx-auto flex w-full flex-col items-center'>
           {isChatOpen && (
             <div
@@ -89,6 +89,16 @@ export function KGChatWindow() {
                   </button>
                 </div>
               </div>
+              {(planStatus !== 'idle' || plan) && (
+                <div className='border-b bg-white/90 px-4 py-3 text-sm'>
+                  <div className='flex items-center justify-between'>
+                    <span className='font-semibold text-gray-700'>Planning</span>
+                    {planStatus === 'loading' && <span className='text-xs text-gray-500'>Generating...</span>}
+                  </div>
+                  {planStatus === 'error' && planError && <p className='mt-2 text-xs text-red-600'>{planError}</p>}
+                  {plan && <pre className='mt-2 whitespace-pre-wrap text-xs text-gray-700'>{plan}</pre>}
+                </div>
+              )}
               <div className='min-h-0 flex-1 overflow-y-auto'>
                 {renderMessages({
                   show: showAlert,

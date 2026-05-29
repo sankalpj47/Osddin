@@ -74,6 +74,9 @@ export interface KGChatProps {
 export interface KGChatRenderProps {
   // State
   model: string;
+  plan: string | null;
+  planStatus: 'idle' | 'loading' | 'ready' | 'error';
+  planError: string | null;
 
   // Chat data
   messages: ReturnType<typeof useChat>['messages'];
@@ -108,6 +111,10 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
   const [model, setModel] = React.useState<(typeof LLM_MODELS)[number]['id']>(LLM_MODELS[0].id);
   const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
   const [checkpoints, setCheckpoints] = React.useState<CheckpointType[]>([]);
+  const [plan, setPlan] = React.useState<string | null>(null);
+  const [planStatus, setPlanStatus] = React.useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [planError, setPlanError] = React.useState<string | null>(null);
+  const planRequestId = React.useRef(0);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Generate unique IDs for Langfuse session tracking
@@ -275,6 +282,72 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
     [messages, setMessages],
   );
 
+  const fetchPlan = React.useCallback(
+    async (messageText: string | undefined, selectedNodeContext: { id: string; label: string }[], userId: string) => {
+      const trimmedText = messageText?.trim();
+
+      if (!trimmedText) {
+        setPlan(null);
+        setPlanStatus('idle');
+        setPlanError(null);
+        return null;
+      }
+
+      const requestId = planRequestId.current + 1;
+      planRequestId.current = requestId;
+      setPlanStatus('loading');
+      setPlanError(null);
+      setPlan(null);
+
+      try {
+        const response = await fetch(`${envURL(process.env.NEXT_PUBLIC_LLM_BACKEND_URL)}/kg-plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: trimmedText,
+            model,
+            sessionId,
+            userId,
+            selectedNodeContext,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate plan (${response.status})`);
+        }
+
+        const data = (await response.json()) as { plan?: string };
+        const nextPlan = typeof data.plan === 'string' ? data.plan : null;
+
+        if (requestId !== planRequestId.current) {
+          return null;
+        }
+
+        if (!nextPlan) {
+          setPlan(null);
+          setPlanStatus('error');
+          setPlanError('Plan unavailable.');
+          return null;
+        }
+
+        setPlan(nextPlan);
+        setPlanStatus('ready');
+        return nextPlan;
+      } catch (error) {
+        if (requestId !== planRequestId.current) {
+          return null;
+        }
+
+        const errorText = error instanceof Error ? error.message : 'Failed to generate plan.';
+        setPlan(null);
+        setPlanStatus('error');
+        setPlanError(errorText);
+        return null;
+      }
+    },
+    [messages, model, sessionId],
+  );
+
   const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
@@ -284,7 +357,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
     }
 
     onChatOpen?.(true);
-    
+
     // Get currently selected nodes from KG store
     const selectedNodes = useKGStore.getState().selectedNodes || [];
     const graph = useKGStore.getState().sigmaInstance?.getGraph();
@@ -292,6 +365,8 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
       const label = graph?.getNodeAttribute(nodeId, 'label') || nodeId;
       return { id: nodeId, label };
     });
+    const userId = getUserId();
+    const planText = await fetchPlan(message.text, selectedNodeContext, userId);
 
     sendMessage(
       { text: message.text, files: message.files },
@@ -299,8 +374,9 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
         body: {
           model,
           sessionId,
-          userId: getUserId(),
+          userId,
           selectedNodeContext,
+          ...(planText ? { plan: planText } : {}),
         },
       },
     );
@@ -518,6 +594,9 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
       <>
         {children({
           model,
+          plan,
+          planStatus,
+          planError,
           messages,
           status,
           checkpoints,
