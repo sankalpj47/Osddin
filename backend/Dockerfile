@@ -22,4 +22,4 @@ COPY --from=build /app/src/clickhouse/migrations /app/src/clickhouse/migrations
 
 LABEL org.opencontainers.image.source="https://github.com/mizzoudbl/tbep"
 
-CMD [ "node", "dist/main" ]
+CMD [ "node", "dist/src/main" ]
