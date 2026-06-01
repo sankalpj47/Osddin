@@ -2,70 +2,90 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { Search, Network } from 'lucide-react';
+
 import { Chat } from '@/components/chat';
 import { KnowledgeGraphTab, SearchTab, UploadTab } from '@/components/explore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 function ExploreContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab') ?? undefined;
-  const defaultTab = ['search', 'upload', 'knowledge-graph'].includes(tabParam ?? '') ? tabParam : 'search';
+
+  const defaultTab = ['search', 'upload', 'knowledge-graph'].includes(tabParam ?? '')
+    ? tabParam
+    : 'search';
 
   return (
-    <div className='relative mx-auto min-h-[60vh] max-w-7xl'>
-      <Tabs defaultValue={defaultTab}>
-        <TabsList className='grid h-auto w-full grid-cols-1 gap-2 border border-teal-100 bg-white p-2 shadow-xs sm:grid-cols-3 sm:gap-0 sm:p-0'>
-          <TabsTrigger
-            value='search'
-            className='min-h-[70px] w-full justify-start rounded-md p-3 text-left text-teal-900 data-[state=active]:bg-secondary data-[state=active]:text-white sm:min-h-20 sm:p-4'
-          >
-            <div className='flex w-full flex-col items-start'>
-              <span className='bg-linear-to-r from-emerald-500 via-teal-600 to-cyan-600 bg-clip-text font-semibold text-sm text-transparent leading-tight sm:text-base lg:text-lg'>
-                Search by Multiple Genes
-              </span>
-              <span className='mt-1 text-wrap text-slate-600 text-xs leading-tight md:text-sm'>
-                Paste genes/ENSG IDs and verify before building a network
-              </span>
-            </div>
-          </TabsTrigger>
-          <TabsTrigger
-            value='upload'
-            className='min-h-[70px] w-full justify-start rounded-md p-3 text-left text-teal-900 data-[state=active]:bg-secondary data-[state=active]:text-white sm:min-h-20 sm:p-4'
-          >
-            <div className='flex w-full flex-col items-start'>
-              <span className='bg-linear-to-r from-emerald-500 via-teal-600 to-cyan-600 bg-clip-text font-semibold text-sm text-transparent leading-tight sm:text-base lg:text-lg'>
-                Build your own Network (ByoN)
-              </span>
-              <span className='mt-1 text-wrap text-slate-600 text-xs leading-tight md:text-sm'>
-                Upload CSV/JSON to create a custom interaction network
-              </span>
-            </div>
-          </TabsTrigger>
-          <TabsTrigger
-            value='knowledge-graph'
-            className='min-h-[70px] w-full justify-start rounded-md p-3 text-left text-teal-900 data-[state=active]:bg-secondary data-[state=active]:text-white sm:min-h-20 sm:p-4'
-          >
-            <div className='flex w-full flex-col items-start'>
-              <span className='bg-linear-to-r from-emerald-500 via-teal-600 to-cyan-600 bg-clip-text font-semibold text-sm text-transparent leading-tight sm:text-base lg:text-lg'>
-                Knowledge Graph Explorer
-              </span>
-              <span className='mt-1 text-wrap text-slate-600 text-xs leading-tight md:text-sm'>
-                Upload CSV to visualize and explore knowledge graphs
-              </span>
-            </div>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value='search' className='mt-4'>
-          <SearchTab />
-        </TabsContent>
-        <TabsContent value='upload' className='mt-4'>
-          <UploadTab />
-        </TabsContent>
-        <TabsContent value='knowledge-graph' className='mt-4'>
-          <KnowledgeGraphTab />
-        </TabsContent>
-      </Tabs>
-      <Chat />
+    <div className="relative mx-auto min-h-[60vh] max-w-7xl">
+      <div className="flex flex-col gap-4 xl:grid xl:h-[calc(100vh-120px)] xl:grid-cols-2">
+
+        {/* Left Panel */}
+        <div className="min-h-0 flex flex-col">
+          <Tabs defaultValue={defaultTab} className="flex min-h-0 flex-col">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-[#d6eaea] p-2">
+              <TabsTrigger
+                value="search"
+                className="h-[90px] min-w-0 whitespace-normal rounded-lg border-0 px-5 py-3
+                data-[state=active]:bg-white
+                data-[state=active]:shadow-sm"
+              >
+                <div className="flex w-full min-w-0 items-center gap-4">
+                  <Search className="h-5 w-5 shrink-0 text-slate-400" />
+                  <div className="flex min-w-0 flex-col items-start text-left">
+                    <span className="text-[15px] font-semibold leading-tight text-slate-900">
+                      Search by Multiple Genes
+                    </span>
+                    <span className="mt-1 text-[11px] leading-snug text-slate-600">
+                      Paste genes/ENSG IDs and verify before building
+                    </span>
+                  </div>
+                </div>
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="upload"
+                className="h-[90px] min-w-0 whitespace-normal rounded-lg border-0 px-5 py-3
+                data-[state=active]:bg-white
+                data-[state=active]:shadow-sm"
+              >
+                <div className="flex w-full min-w-0 items-center gap-4">
+                  <Network className="h-5 w-5 shrink-0 text-slate-400" />
+                  <div className="flex min-w-0 flex-col items-start text-left">
+                    <span className="text-[15px] font-semibold leading-tight text-slate-900">
+                      Build Your Own Network
+                    </span>
+                    <span className="mt-1 text-[11px] leading-snug text-slate-600">
+                      Upload CSV/JSON to create a custom network
+                    </span>
+                  </div>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="search" className="mt-4 flex-1 min-h-0">
+              <SearchTab />
+            </TabsContent>
+
+            <TabsContent value="upload" className="mt-4 flex-1 min-h-0">
+              <UploadTab />
+            </TabsContent>
+
+            <TabsContent value="knowledge-graph" className="mt-4 flex-1 min-h-0">
+              <KnowledgeGraphTab />
+            </TabsContent>
+          </Tabs>
+
+          <div className="mt-4 xl:hidden h-[648px]">
+            <Chat />
+          </div>
+        </div>
+
+     
+       <div className="hidden xl:flex h-[648px] flex-col">
+         <Chat />
+     </div>
+
+      </div>
     </div>
   );
 }

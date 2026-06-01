@@ -112,14 +112,14 @@ export function UploadTab() {
       return;
     }
 
-    // Clear old gene network file before storing new one
+    
     try {
       await store.delete(NETWORK_STORAGE_KEYS.GENE_NETWORK);
     } catch (error) {
       console.warn('No existing gene network file to delete:', error);
     }
 
-    // Store with consistent key
+
     store.put(file, NETWORK_STORAGE_KEYS.GENE_NETWORK);
     toast.success('File uploaded successfully', {
       cancel: { label: 'Close', onClick() {} },
@@ -134,73 +134,115 @@ export function UploadTab() {
   const uploadFileId = useId();
 
   return (
-    <div className='mx-auto rounded-lg border border-teal-100 bg-white p-4 shadow-md sm:p-6'>
-      <div className='grid grid-cols-1 items-start gap-6 xl:grid-cols-2'>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            void handleUploadSubmit();
-          }}
-          className='space-y-4'
-        >
-          <div>
-            <div className='mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-              <Label htmlFor={uploadFileId} className='font-medium'>
-                Upload CSV or JSON
-              </Label>
-              <p className='text-sm text-zinc-500'>
-                (CSV examples:{' '}
-                <a href={'/example1.csv'} download className='underline hover:text-zinc-700'>
-                  #1
-                </a>{' '}
-                <a href={'/example2.csv'} download className='underline hover:text-zinc-700'>
-                  #2
-                </a>
-                )
-              </p>
-            </div>
-            <Input
-              id={uploadFileId}
-              type='file'
-              accept='.csv,.json'
-              onChange={handleFileChange}
-              required
-              className='h-12 cursor-pointer border-2 border-dashed transition-colors hover:border-gray-400'
-            />
-            <p className='mt-2 text-xs text-zinc-500 leading-relaxed'>
-              • CSV: first two columns are ENSG IDs or Gene names; third column is interaction score.
-              <br />• JSON: array of records; non-numeric string values are treated as gene identifiers.
-            </p>
-          </div>
-          <Button type='submit' className='relative w-full overflow-hidden bg-teal-600 text-white hover:bg-teal-700'>
-            <AnimatedNetworkBackground
-              className='pointer-events-none absolute inset-0 h-full w-full opacity-35'
-              moving={loading}
-              speedMultiplier={2.2}
-            />
-            <span className='relative z-10 flex items-center justify-center'>
-              {loading && <LoaderIcon className='mr-2 animate-spin' size={20} />} Submit
-            </span>
-          </Button>
-        </form>
-        <div className='border-t pt-4 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-6'>
-          <h3 className='mb-3 font-semibold text-lg'>File Format Preview</h3>
-          <Image
-            src={'/image/uploadFormat.svg'}
-            width={400}
-            height={400}
-            alt='CSV file format example'
-            className='mx-auto w-full max-w-md mix-blend-multiply xl:max-w-full'
-          />
+  <div className='mx-auto rounded-lg border border-teal-100 bg-white p-6 shadow-sm'>
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        void handleUploadSubmit();
+      }}
+      className='space-y-3'
+    >
+      {/* Header */}
+      <div>
+        <div className='mb-2 flex items-center justify-between'>
+          <Label
+            htmlFor={uploadFileId}
+            className='text-[16px] font-semibold text-slate-800'
+          >
+            Upload CSV or JSON
+          </Label>
+
+          <p className='text-xs text-zinc-500'>
+            (CSV examples:{' '}
+            <a
+              href='/example1.csv'
+              download
+              className='underline hover:text-zinc-700'
+            >
+              #1
+            </a>{' '}
+            <a
+              href='/example2.csv'
+              download
+              className='underline hover:text-zinc-700'
+            >
+              #2
+            </a>
+            )
+          </p>
+        </div>
+
+        <Input
+          id={uploadFileId}
+          type='file'
+          accept='.csv,.json'
+          onChange={handleFileChange}
+          required
+          className='h-10 cursor-pointer border-2 border-dashed border-slate-400 text-xs'
+        />
+
+        <div className='mt-2 space-y-1 text-xs text-zinc-500'>
+          <p>
+            • CSV: first two columns are ENSG IDs or Gene names; third column
+            is interaction score.
+          </p>
+
+          <p>
+            • JSON: array of records; non-numeric string values are treated as
+            gene identifiers.
+          </p>
         </div>
       </div>
-      <PopUpTable
-        geneIDs={geneIDs}
-        tableOpen={tableOpen}
-        setTableOpen={setTableOpen}
-        data={data}
-        handleGenerateGraph={handleGenerateGraph}
-      />
-    </div>
-  );
+
+      {/* Preview Card */}
+      <div className='rounded-lg border border-teal-100 bg-[#f6fcfb] px-4 py-4'>
+        <h3 className='text-center text-[12px] font-semibold uppercase tracking-wide text-teal-700'>
+          File Format Preview
+        </h3>
+
+
+<div className='mt-4 flex justify-center'>
+  <Image
+    src='/image/uploadFormat.svg'
+    width={800}
+    height={550}
+    alt='CSV file format example'
+    className='h-auto w-[750px] max-w-full'
+  />
+</div>
+
+      </div>
+
+      {/* Submit Button */}
+      <Button
+        type='submit'
+        className='relative h-9 w-full overflow-hidden bg-teal-600 text-sm font-medium text-white hover:bg-teal-700'
+      >
+        <AnimatedNetworkBackground
+          className='pointer-events-none absolute inset-0 h-full w-full opacity-35'
+          moving={loading}
+          speedMultiplier={2.2}
+        />
+
+        <span className='relative z-10 flex items-center justify-center'>
+          {loading && (
+            <LoaderIcon
+              className='mr-2 animate-spin'
+              size={16}
+            />
+          )}
+          Submit
+        </span>
+      </Button>
+    </form>
+
+    <PopUpTable
+      geneIDs={geneIDs}
+      tableOpen={tableOpen}
+      setTableOpen={setTableOpen}
+      data={data}
+      handleGenerateGraph={handleGenerateGraph}
+    />
+  </div>
+);
 }
