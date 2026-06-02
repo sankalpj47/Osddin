@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { Search, Network } from 'lucide-react';
 
 import { Chat } from '@/components/chat';
-import { KnowledgeGraphTab, SearchTab, UploadTab } from '@/components/explore';
+import { SearchTab, UploadTab } from '@/components/explore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -17,10 +17,10 @@ function ExploreContent() {
 
   return (
     <div className="relative mx-auto min-h-[60vh] max-w-7xl">
-      <div className="flex flex-col gap-4 xl:grid xl:h-[calc(100vh-120px)] xl:grid-cols-2">
+      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:items-stretch">
 
         {/* Left Panel */}
-        <div className="min-h-0 flex flex-col">
+        <div className="min-h-0 flex flex-col h-full">
           <Tabs defaultValue={defaultTab} className="flex min-h-0 flex-col">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-[#d6eaea] p-2">
               <TabsTrigger
@@ -69,22 +69,15 @@ function ExploreContent() {
             <TabsContent value="upload" className="mt-4 flex-1 min-h-0">
               <UploadTab />
             </TabsContent>
-
-            <TabsContent value="knowledge-graph" className="mt-4 flex-1 min-h-0">
-              <KnowledgeGraphTab />
-            </TabsContent>
           </Tabs>
 
           <div className="mt-4 xl:hidden h-[648px]">
             <Chat />
           </div>
         </div>
-
-     
-       <div className="hidden xl:flex h-[648px] flex-col">
-         <Chat />
-     </div>
-
+       <div className="hidden xl:flex h-full flex-col">
+          <Chat />
+        </div>
       </div>
     </div>
   );

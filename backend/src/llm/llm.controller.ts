@@ -45,7 +45,7 @@ export class LlmController {
     private readonly llmService: LlmService,
 
     private readonly kgLlmService: LangGraphLlmService,
-  ) {}
+  ) { }
 
   private toTraceRequest(
     promptDto: PromptDto,
@@ -127,10 +127,10 @@ export class LlmController {
     @Body() promptDto: PromptDto,
   ) {
 
-  
+
     const request =
       this.toTraceRequest(promptDto);
-      console.log("kg plan request", promptDto);
+    console.log("kg plan request", promptDto);
 
     return observe(
       async () => {

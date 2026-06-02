@@ -1,0 +1,32 @@
+[
+  {
+    "Node1": "BRCA1",
+    "Node2": "TP53",
+    "Score": 0.95
+  },
+  {
+    "Node1": "TP53",
+    "Node2": "EGFR",
+    "Score": 0.87
+  },
+  {
+    "Node1": "EGFR",
+    "Node2": "MYC",
+    "Score": 0.78
+  },
+  {
+    "Node1": "MYC",
+    "Node2": "AKT1",
+    "Score": 0.82
+  },
+  {
+    "Node1": "AKT1",
+    "Node2": "MTOR",
+    "Score": 0.91
+  },
+  {
+    "Node1": "MTOR",
+    "Node2": "FOXO1",
+    "Score": 0.76
+  }
+]
