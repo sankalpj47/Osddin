@@ -52,7 +52,7 @@ function ExploreContent() {
                   <Network className="h-5 w-5 shrink-0 text-slate-400" />
                   <div className="flex min-w-0 flex-col items-start text-left">
                     <span className="text-[15px] font-semibold leading-tight text-slate-900">
-                      Uplaod Graph Data
+                      Upload Graph Data
                     </span>
                     <span className="mt-1 text-[11px] leading-snug text-slate-600">
                       Upload your own graph data in supported formats and explore
