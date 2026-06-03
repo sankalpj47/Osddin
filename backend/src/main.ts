@@ -18,22 +18,34 @@ async function bootstrap() {
   // Trust proxy for proper IP tracking in rate limiting
   app.set('trust proxy', 'loopback');
 
-  app.enableCors({
-    origin: (requestOrigin, callback) => {
-      if (configService.get('NODE_ENV', 'development') === 'production') {
-        const FRONTEND_URL = configService.get<string | undefined>('FRONTEND_URL');
-        if (!FRONTEND_URL || requestOrigin === FRONTEND_URL) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      } else {
-        callback(null, true);
-      }
-    },
-    credentials: true,
-    methods: 'GET, POST',
-  });
+  const allowedOrigins =
+  process.env.FRONTEND_URLS?.split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean) ?? [];
+
+app.enableCors({
+  origin: (requestOrigin, callback) => {
+    // Allow curl, Postman, server-to-server requests
+    if (!requestOrigin) {
+      return callback(null, true);
+    }
+
+    // Allow everything outside production
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+
+    // Allow configured frontends
+    if (allowedOrigins.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${requestOrigin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+});
+  
   app.use(compression());
   app.use(cookieParser());
   await app.listen(configService.get('PORT', 4000));

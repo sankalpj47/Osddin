@@ -51,7 +51,7 @@ export function ForceLayout() {
       nodes.current = graph.mapNodes((node, attributes) => ({
         ID: node,
         x: attributes.x,
-        y: attributes.y
+        y: attributes.y,
       }));
       edges.current = graph.mapEdges((_edge, _attr, source, target) => ({
         source,

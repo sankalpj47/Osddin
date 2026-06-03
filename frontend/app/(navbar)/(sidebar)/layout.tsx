@@ -5,10 +5,11 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className='container mx-auto'>
       <div className='flex flex-col gap-4 md:flex-row'>
-        <div className='flex w-full flex-col gap-4'>
+        <div className='mb-10 flex w-full flex-col gap-4'>
           <div className='container'>{children}</div>
         </div>
       </div>
+
       <section className='mt-10 flex flex-col items-center'>
         <h1 className='font-semibold text-2xl tracking-tight md:text-4xl'>About The Tool</h1>
         <div className='mx-12 my-4 space-y-2 text-center'>

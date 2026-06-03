@@ -1,7 +1,16 @@
 'use client';
 
 import { useLazyQuery } from '@apollo/client/react';
-import { AlertTriangleIcon, CheckCircleIcon, HistoryIcon, InfoIcon, LoaderIcon, UploadIcon, XIcon } from 'lucide-react';
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  HistoryIcon,
+  InfoIcon,
+  LoaderIcon,
+  Settings2Icon,
+  UploadIcon,
+  XIcon,
+} from 'lucide-react';
 import React, { type ChangeEvent, useId } from 'react';
 import { toast } from 'sonner';
 import AnimatedNetworkBackground from '@/components/AnimatedNetworkBackground';
@@ -45,6 +54,7 @@ export function SearchTab() {
   );
   const [fetchTopGenes, { loading: topGenesLoading }] = useLazyQuery<TopGeneData, TopGeneVariables>(TOP_GENES_QUERY);
   const [diseaseData, setDiseaseData] = React.useState<GetDiseaseData | undefined>(undefined);
+  const [advancedOpen, setAdvancedOpen] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -65,12 +75,14 @@ export function SearchTab() {
   }, []);
 
   const [formData, setFormData] = React.useState<GraphConfigForm>({
-    seedGenes: '',
+    seedGenes:
+      'SOD1, TARDBP, FUS, TBK1, SQSTM1, UBQLN2, ANG, SETX, DCTN1, OPTN, VCP, CHMP2B, ALS2, SPG11, FIG4, ANXA11, TUBA4A, PFN1, VAPB, MATR3, SIGMAR1, KIF5A, ERBB4, C9orf72, HNRNPA1',
     diseaseMap: 'MONDO_0004976',
     order: '0',
     interactionType: ['PPI'],
     minScore: '0.9',
   });
+  const [seedInputMode, setSeedInputMode] = React.useState<'type' | 'upload'>('type');
   const [history, setHistory] = React.useState<HistoryItem[]>([]);
   const [tableOpen, setTableOpen] = React.useState(false);
   const [geneIDs, setGeneIDs] = React.useState<string[]>([]);
@@ -88,7 +100,6 @@ export function SearchTab() {
 
   React.useEffect(() => {
     setHistory(JSON.parse(localStorage.getItem('history') ?? '[]'));
-    // Dialog handles Escape key internally
   }, []);
 
   const applyAutofill = React.useCallback(
@@ -106,9 +117,8 @@ export function SearchTab() {
           return;
         }
 
-        // Extract data from Apollo QueryResult
         const topGeneData = result?.data;
-        
+
         if (!topGeneData?.topGenesByDisease) {
           console.warn('No topGenesByDisease in response:', { topGeneData, result });
           toast.error('No seed genes found for the selected disease', {
@@ -162,30 +172,8 @@ export function SearchTab() {
       return;
     }
 
-    // When enabling autofill or when disease changes, request autofill immediately.
     setPendingAutofillDiseaseId(formData.diseaseMap);
   }, [autofillEnabled, formData.diseaseMap]);
-
-  // Debounce the numeric input so rapid typing doesn't trigger re-renders or API requests.
-  React.useEffect(() => {
-    const t = setTimeout(() => {
-      const parsed = Number.parseInt(autofillGeneLimitInput, 10);
-      const clamped = Number.isNaN(parsed)
-        ? DEFAULT_AUTOFILL_GENE_LIMIT
-        : Math.min(1000, Math.max(1, parsed));
-
-      if (clamped !== autofillGeneLimit) {
-        setAutofillGeneLimit(clamped);
-
-        // Only trigger autofill when enabled; setPendingAutofillDiseaseId will kick the fetch effect.
-        if (autofillEnabled) {
-          setPendingAutofillDiseaseId(formData.diseaseMap);
-        }
-      }
-    }, 500);
-
-    return () => clearTimeout(t);
-  }, [autofillGeneLimitInput, autofillEnabled, formData.diseaseMap, autofillGeneLimit]);
 
   React.useEffect(() => {
     if (!autofillEnabled) {
@@ -193,7 +181,7 @@ export function SearchTab() {
     }
 
     setPendingAutofillDiseaseId(formData.diseaseMap);
-  }, [autofillEnabled, autofillGeneLimit, formData.diseaseMap]);
+  }, [autofillEnabled, formData.diseaseMap]);
 
   React.useEffect(() => {
     if (!autofillEnabled || !pendingAutofillDiseaseId) {
@@ -217,7 +205,7 @@ export function SearchTab() {
       seedGenes.split(/[,|\n]/).map(gene =>
         gene
           .trim()
-          .replace(/^['"]|['"]$/g, '') // remove surrounding single or double quotes
+          .replace(/^['"]|['"]$/g, '')
           .toUpperCase(),
       ),
     ).filter(Boolean);
@@ -304,10 +292,13 @@ export function SearchTab() {
 
   return (
     <div className='space-y-4 rounded-lg border border-teal-100 bg-white p-4 shadow-xs sm:space-y-5 sm:p-6 sm:py-4'>
-      <div className='flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between'>
-        <div className='w-1/2 space-y-1'>
-          <div className='flex items-end gap-1'>
-            <Label htmlFor='diseaseMap'>Disease</Label>
+      {/* Disease row */}
+      <div className='flex items-end justify-between gap-4'>
+        <div className='flex-1 space-y-1'>
+          <div className='flex items-center gap-1'>
+            <Label htmlFor='diseaseMap' className='font-bold text-base text-gray-900'>
+              Disease
+            </Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <InfoIcon size={12} />
@@ -325,165 +316,218 @@ export function SearchTab() {
             className='w-full'
           />
         </div>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-end xl:flex-row xl:items-center'>
-          <div className='mr-4 flex flex-col gap-3 sm:flex-row sm:items-center'>
-            <div className='flex items-center gap-2'>
-              <Label htmlFor={autoFillToggleId} className='whitespace-nowrap text-sm'>
-                Autofill Seed Genes
-              </Label>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <InfoIcon size={12} />
-                </TooltipTrigger>
-                <TooltipContent className='max-w-xs'>
-                  <div>
-                    <div>Automatically fills the seed genes box with the top 25 genes for the selected disease.</div>
-                    <div>Genes are ranked by overall association score from the OpenTargets platform.</div>
-                    <div>When enabled, changing the disease refreshes the seed genes automatically.</div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Switch id={autoFillToggleId} checked={autofillEnabled} onCheckedChange={setAutofillEnabled} />
-              {/* <span className='text-muted-foreground text-xs sm:text-sm'>
-                {topGenesLoading ? `Loading top ${autofillGeneLimit} genes...` : `Top ${autofillGeneLimit} genes`}
-              </span> */}
-            </div>
-            <div className='flex items-center gap-2'>
-              <Label htmlFor='autofill-gene-limit' className='whitespace-nowrap text-sm'>
-                Limit
-              </Label>
-              <Input
-                id='autofill-gene-limit'
-                type='number'
-                min={1}
-                max={1000}
-                step={1}
-                className='h-8 w-24'
-                value={autofillGeneLimitInput}
-                onChange={e => setAutofillGeneLimitInput(e.target.value)}
-                onBlur={() => {
-                  // Ensure final value is applied immediately on blur
-                  const parsed = Number.parseInt(autofillGeneLimitInput, 10);
-                  const clamped = Number.isNaN(parsed)
-                    ? DEFAULT_AUTOFILL_GENE_LIMIT
-                    : Math.min(1000, Math.max(1, parsed));
-                  if (clamped !== autofillGeneLimit) {
-                    setAutofillGeneLimit(clamped);
-                    if (autofillEnabled) setPendingAutofillDiseaseId(formData.diseaseMap);
-                  }
-                }}
-                disabled={topGenesLoading || !autofillEnabled}
-              />
-            </div>
-          </div>
-
-          <Button variant='outline' size='sm' className='h-8 px-3 text-sm' onClick={() => setHistoryOpen(true)}>
-            <HistoryIcon size={16} />
-            History
-          </Button>
+        <div className='flex items-center gap-2 pb-1'>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type='button'
+                variant='ghost'
+                size='icon'
+                className='size-8 text-gray-500 hover:text-gray-800'
+                onClick={() => setAdvancedOpen(true)}
+              >
+                <Settings2Icon size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Advanced Settings</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type='button'
+                variant='ghost'
+                size='icon'
+                className='size-8 text-gray-500 hover:text-gray-800'
+                onClick={() => setHistoryOpen(true)}
+              >
+                <HistoryIcon size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>History</TooltipContent>
+          </Tooltip>
         </div>
       </div>
-      <div className='flex flex-col lg:flex-row'>
-        <div className='flex-1'>
-          <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-            <Label htmlFor={seedGenesId} className='font-medium'>
-              Seed Genes
-            </Label>
-            <p className='text-xs text-zinc-500 sm:text-sm'>
-              (one-per-line or CSV; examples:
-              <button
+
+      {/* Advanced Settings Dialog */}
+      <AlertDialog open={advancedOpen}>
+        <AlertDialogContent className='max-w-md rounded-2xl p-6'>
+          <AlertDialogHeader>
+            <div className='flex items-start justify-between'>
+              <div>
+                <AlertDialogTitle className='font-bold text-gray-900 text-xl'>Advanced Settings</AlertDialogTitle>
+                <AlertDialogDescription className='mt-1 text-gray-500 text-sm'>
+                  Customize network generation parameters
+                </AlertDialogDescription>
+              </div>
+              <Button
                 type='button'
-                className='ml-1 cursor-pointer underline hover:text-zinc-700'
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    seedGenes: 'MAPT, STX6, EIF2AK3, MOBP, DCTN1, LRRK2',
-                  })
-                }
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setFormData({
-                      ...formData,
-                      seedGenes: 'MAPT, STX6, EIF2AK3, MOBP, DCTN1, LRRK2',
-                    });
-                  }
-                }}
+                variant='ghost'
+                size='icon'
+                className='size-7 shrink-0 text-gray-400 hover:text-gray-600'
+                onClick={() => setAdvancedOpen(false)}
               >
-                #1
-              </button>
-              <button
-                type='button'
-                className='ml-2 cursor-pointer underline hover:text-zinc-700'
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    seedGenes:
-                      'ENSG00000185013\nENSG00000076685\nENSG00000166548\nENSG00000156136\nENSG00000114956\nENSG00000116981',
-                  })
-                }
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setFormData({
-                      ...formData,
-                      seedGenes:
-                        'ENSG00000185013\nENSG00000076685\nENSG00000166548\nENSG00000156136\nENSG00000114956\nENSG00000116981',
-                    });
-                  }
-                }}
-              >
-                #2
-              </button>
-              <button
-                type='button'
-                className='ml-2 cursor-pointer underline hover:text-zinc-700'
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    seedGenes: 'NT5C1B\nNT5C2\nTK2\nDCK\nDGUOK\nNT5C1A',
-                  })
-                }
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setFormData({
-                      ...formData,
-                      seedGenes: 'NT5C1B\nNT5C2\nTK2\nDCK\nDGUOK\nNT5C1A',
-                    });
-                  }
-                }}
-              >
-                #3
-              </button>
-              )
-            </p>
+                <XIcon size={16} />
+              </Button>
+            </div>
+          </AlertDialogHeader>
+
+          <div className='mt-4 space-y-4'>
+            <div className='flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4'>
+              <div className='flex-1'>
+                <p className='font-semibold text-gray-900 text-sm'>Autofill Seed Genes</p>
+                <p className='mt-0.5 text-gray-500 text-sm'>
+                  Automatically populate genes on page load and disease change
+                </p>
+              </div>
+              <Switch
+                id={autoFillToggleId}
+                checked={autofillEnabled}
+                onCheckedChange={setAutofillEnabled}
+                className='ml-4'
+              />
+            </div>
+
+            {/* No. of genes */}
+            {autofillEnabled && (
+              <div className='flex items-center gap-3 rounded-lg bg-teal-50 p-4'>
+                <Label htmlFor='autofill-gene-limit' className='whitespace-nowrap text-gray-700 text-sm'>
+                  No. of genes
+                </Label>
+
+                <Input
+                  id='autofill-gene-limit'
+                  type='number'
+                  min={1}
+                  max={1000}
+                  step={1}
+                  className='h-9 w-24 rounded-lg border-teal-400 text-center'
+                  value={autofillGeneLimitInput}
+                  onChange={e => setAutofillGeneLimitInput(e.target.value)}
+                  disabled={topGenesLoading}
+                />
+
+                <Button
+                  type='button'
+                  size='sm'
+                  disabled={topGenesLoading}
+                  onClick={() => {
+                    const parsed = Number.parseInt(autofillGeneLimitInput, 10);
+
+                    const clamped = Number.isNaN(parsed)
+                      ? DEFAULT_AUTOFILL_GENE_LIMIT
+                      : Math.min(1000, Math.max(1, parsed));
+
+                    setAutofillGeneLimit(clamped);
+
+                    if (autofillEnabled) {
+                      setPendingAutofillDiseaseId(formData.diseaseMap);
+                    }
+                  }}
+                >
+                  Apply
+                </Button>
+              </div>
+            )}
+
+            {/* Interaction Type */}
+            {/* <div className='space-y-1'>
+        <Label className='font-semibold text-gray-900 text-sm'>Interaction Type</Label>
+        <p className='text-gray-500 text-sm'>
+          Select the interaction dataset to use for network generation
+        </p>
+        <Select
+          value={formData.interactionType[0]}
+          onValueChange={val => setFormData(prev => ({ ...prev, interactionType: [val as 'PPI' | 'INT_ACT' | 'BIO_GRID'] }))}
+        >
+          <SelectTrigger className='mt-2 border border-teal-600 bg-teal-50 text-gray-800 hover:bg-teal-100'>
+            <SelectValue placeholder='Select...' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='PPI'>PPI</SelectItem>
+            <SelectItem value='INT_ACT'>INT_ACT</SelectItem>
+            <SelectItem value='BIO_GRID'>BIO_GRID</SelectItem>
+          </SelectContent>
+        </Select>
+      </div> */}
           </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Seed Genes */}
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center gap-1'>
+          <Label className='font-bold text-base text-gray-900'>Seed Genes</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <InfoIcon size={13} className='cursor-pointer text-gray-400 hover:text-gray-600' />
+            </TooltipTrigger>
+            <TooltipContent className='max-w-xs'>
+              Enter the genes you want to build your network around. You can input them one per line or comma-separated.
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <p className='text-gray-500 text-sm'>
+          Try examples:{' '}
+          <button
+            type='button'
+            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            onClick={() => setFormData({ ...formData, seedGenes: 'MAPT, STX6, EIF2AK3, MOBP, DCTN1, LRRK2' })}
+          >
+            #1
+          </button>{' '}
+          <button
+            type='button'
+            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            onClick={() =>
+              setFormData({
+                ...formData,
+                seedGenes:
+                  'ENSG00000185013\nENSG00000076685\nENSG00000166548\nENSG00000156136\nENSG00000114956\nENSG00000116981',
+              })
+            }
+          >
+            #2
+          </button>{' '}
+          <button
+            type='button'
+            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            onClick={() => setFormData({ ...formData, seedGenes: 'NT5C1B\nNT5C2\nTK2\nDCK\nDGUOK\nNT5C1A' })}
+          >
+            #3
+          </button>
+        </p>
+
+        <div className='flex w-fit overflow-hidden rounded-lg border border-gray-200 bg-teal-600/10 p-1'>
+          <button
+            type='button'
+            onClick={() => setSeedInputMode('type')}
+            className={`rounded-md px-4 py-1.5 font-medium text-sm transition-all ${seedInputMode === 'type' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Type Genes
+          </button>
+          <button
+            type='button'
+            onClick={() => setSeedInputMode('upload')}
+            className={`rounded-md px-4 py-1.5 font-medium text-sm transition-all ${seedInputMode === 'upload' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Upload File
+          </button>
+        </div>
+
+        {seedInputMode === 'type' && (
           <Textarea
             id={seedGenesId}
             placeholder='Type seed genes (comma or newline separated)'
-            className='mt-2 h-33'
+            className='h-40 resize-none rounded-lg border-gray-200 text-sm'
             value={formData.seedGenes}
             onChange={handleFileRead}
             disabled={topGenesLoading}
             required
           />
-        </div>
+        )}
 
-        <div className='flex flex-row items-center justify-center py-2 lg:flex-col lg:px-4'>
-          <div className='h-px w-full bg-slate-800/70 lg:hidden' />
-          <div className='hidden w-px flex-1 bg-slate-800/70 lg:block' />
-          <span className='px-2 py-1 text-slate-400 text-xs lg:py-2'>OR</span>
-          <div className='h-px w-full bg-slate-800/70 lg:hidden' />
-          <div className='hidden w-px flex-1 bg-slate-800/70 lg:block' />
-        </div>
-
-        <div className='flex-1'>
-          <Label htmlFor={seedFileId} className='mb-3 block font-medium text-sm text-teal-900'>
-            Upload Text File
-          </Label>
+        {seedInputMode === 'upload' && (
           <div className='relative'>
             <Input
               id={seedFileId}
@@ -494,9 +538,7 @@ export function SearchTab() {
                 const f = e.target.files?.[0];
                 if (!f) return;
                 if (f?.type !== 'text/plain') {
-                  toast.error('Invalid file type', {
-                    cancel: { label: 'Close', onClick() {} },
-                  });
+                  toast.error('Invalid file type', { cancel: { label: 'Close', onClick() {} } });
                   return;
                 }
                 const text = await f.text();
@@ -506,15 +548,11 @@ export function SearchTab() {
               disabled={topGenesLoading}
             />
             <div
-              className={`cursor-pointer rounded-lg border-2 border-dashed p-3 text-center transition-all sm:p-4 ${
-                uploadedFile
-                  ? 'border-green-300 bg-green-50 hover:bg-green-100'
-                  : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`flex h-40 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-all ${uploadedFile ? 'border-green-300 bg-green-50 hover:bg-green-100' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'}`}
             >
               {uploadedFile ? (
-                <div className='flex flex-col items-center justify-center gap-2 p-4 sm:flex-row sm:gap-3 sm:p-6'>
-                  <CheckCircleIcon className='size-6 text-green-600 sm:size-8' />
+                <div className='flex flex-col items-center gap-2 sm:flex-row sm:gap-3'>
+                  <CheckCircleIcon className='size-7 text-green-600' />
                   <div className='text-center sm:text-left'>
                     <p className='font-medium text-green-800 text-sm'>{uploadedFile.name}</p>
                     <p className='text-green-600 text-xs'>File uploaded successfully</p>
@@ -533,18 +571,17 @@ export function SearchTab() {
                   </Button>
                 </div>
               ) : (
-                <>
-                  <UploadIcon className='mx-auto mb-2 size-8 text-gray-400 sm:mb-3 sm:size-10' />
+                <div>
+                  <UploadIcon className='mx-auto mb-2 size-9 text-gray-400' />
                   <p className='mb-1 text-gray-600 text-sm'>Browse... No file selected.</p>
-                  <p className='text-gray-400 text-xs'>
-                    Click to upload or drag and drop your gene list (.txt files only)
-                  </p>
-                </>
+                  <p className='text-gray-400 text-xs'>Click to upload or drag and drop (.txt only)</p>
+                </div>
               )}
             </div>
           </div>
-        </div>
+        )}
       </div>
+
       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         {graphConfig.map(config => (
           <div key={config.id} className='space-y-1'>
@@ -575,13 +612,13 @@ export function SearchTab() {
           </div>
         ))}
       </div>
-      <div className='flex justify-center'>
+
+      <div className='mt-auto flex justify-center pt-2'>
         <Button
           type='button'
           onClick={handleSubmit}
-          className='relative w-full overflow-hidden font-semibold hover:opacity-90 sm:w-3/4 lg:w-1/2'
+          className='relative w-full overflow-hidden font-semibold hover:opacity-90'
         >
-          {/* Animated background inside the button */}
           <AnimatedNetworkBackground
             className='pointer-events-none absolute inset-0 h-full w-full opacity-40'
             moving={loading}
@@ -600,6 +637,7 @@ export function SearchTab() {
           </span>
         </Button>
       </div>
+
       <PopUpTable
         setTableOpen={setTableOpen}
         tableOpen={tableOpen}
@@ -607,6 +645,7 @@ export function SearchTab() {
         data={data}
         geneIDs={geneIDs}
       />
+
       <AlertDialog open={showAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -633,6 +672,7 @@ export function SearchTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <History
         history={history}
         historyOpen={historyOpen}

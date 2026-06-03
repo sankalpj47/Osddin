@@ -152,11 +152,9 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
     onChatOpen?.(false);
   };
 
-  // Auto-create checkpoint after each assistant message
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (messages.length > 0 && lastMessage?.role === 'assistant' && status === 'submitted') {
-      // Create checkpoint after the last message
       createCheckpoint(messages.length - 1);
     }
   }, [messages, status, createCheckpoint]);
@@ -180,7 +178,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
           return (
             <React.Fragment key={message.id}>
               <div className='fade-in slide-in-from-bottom-10 animate-in duration-300'>
-                {/* Render attachments if present */}
                 {hasAttachments && (
                   <MessageAttachments className='mb-2'>
                     {message.parts
@@ -245,7 +242,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
                         </Reasoning>
                       );
                     case 'file':
-                      // Files are rendered separately above
                       return null;
                     default:
                       return null;
@@ -253,7 +249,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
                 })}
               </div>
 
-              {/* Render checkpoint if it exists at this message */}
               {checkpoint && (
                 <Checkpoint className='my-4'>
                   <CheckpointIcon />
@@ -272,12 +267,11 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
   );
 
   const renderPromptInput = () => {
-    // Get the selected model data for display
     const selectedModelData = LLM_MODELS.find(m => m.id === model);
 
     return (
       <PromptInputProvider>
-        <PromptInput globalDrop multiple onSubmit={handleSubmit} className='mx-2'>
+        <PromptInput globalDrop multiple onSubmit={handleSubmit}>
           <PromptInputAttachments>{attachment => <PromptInputAttachment data={attachment} />}</PromptInputAttachments>
           <PromptInputBody>
             <PromptInputTextarea ref={textareaRef} disabled={status === 'error'} />

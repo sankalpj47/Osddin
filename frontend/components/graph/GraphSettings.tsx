@@ -82,8 +82,8 @@ export function GraphSettings({ clickedNodesRef }: { clickedNodesRef?: React.Ref
     const graph = sigma.getGraph();
     setSettings({
       nodeReducer(node, data) {
-        if (data.x==null) data.x = Math.random() * 1000;
-        if (data.y==null) data.y = Math.random() * 1000;
+        if (data.x == null) data.x = Math.random() * 1000;
+        if (data.y == null) data.y = Math.random() * 1000;
         if (!data.size) data.size = defaultNodeSize;
         if (hoveredNode) {
           if (node === hoveredNode.node) {

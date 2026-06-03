@@ -1,0 +1,19 @@
+name: tbep-main
+
+services:
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/mizzoudbl/tbep-frontend-main
+    restart: always
+
+    env_file:
+      - frontend/.env
+
+    ports:
+      - "3001:80"
+
+networks:
+  default:
+    name: tbep-main-network

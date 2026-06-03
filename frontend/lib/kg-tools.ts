@@ -72,8 +72,6 @@ import type {
 } from './kg-chat-types';
 import { type EventMessage, Events, envURL, eventEmitter } from './utils';
 
-
-
 export interface ToolResult<T = unknown> {
   success: boolean;
   data?: T;
