@@ -1,4 +1,4 @@
-# Target & Biomarker Exploration Portal
+# Target & Biomarker Exploration Portal V2
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16742136.svg)](https://doi.org/10.5281/zenodo.16742136)
 
