@@ -16,8 +16,6 @@ import { createOpenAICompatible, OpenAICompatibleProvider } from '@ai-sdk/openai
 import { tavily } from '@tavily/core';
 
 @Injectable()
-
-
 export class LlmService {
   private modelRegistry: ProviderRegistryProvider<{ nvidia: OpenAICompatibleProvider }, ':'>;
 
@@ -112,9 +110,32 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
   generateResponseStream(promptDto: PromptDto) {
     const model = promptDto.model || DEFAULT_MODEL;
 
+    // Build system prompt with network context if available
+    let systemPrompt = this.SYSTEM_PROMPT;
+    if (promptDto.diseaseName || promptDto.networkStatistics) {
+      const contextLines: string[] = [];
+
+      if (promptDto.diseaseName) {
+        contextLines.push(`Current disease context: ${promptDto.diseaseName}`);
+      }
+
+      if (promptDto.networkStatistics) {
+        const stats = promptDto.networkStatistics;
+        contextLines.push('Network statistics:');
+        if (stats.totalNodes) contextLines.push(`  - Total nodes: ${stats.totalNodes}`);
+        if (stats.totalEdges) contextLines.push(`  - Total edges: ${stats.totalEdges}`);
+        if (stats.avgDegree) contextLines.push(`  - Average degree: ${stats.avgDegree.toFixed(2)}`);
+        if (stats.density) contextLines.push(`  - Network density: ${stats.density.toFixed(4)}`);
+      }
+
+      if (contextLines.length > 0) {
+        systemPrompt += `\n\nNetwork Context:\n${contextLines.join('\n')}`;
+      }
+    }
+
     // Convert messages to AI SDK format
     const messages: ModelMessage[] = [
-      { role: 'system', content: this.SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
       ...convertToModelMessages((promptDto.messages as UIMessage[]) ?? []),
     ];
 
@@ -146,12 +167,11 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
 
     // Build system prompt with graph context and selected node information
     let systemPrompt = this.KG_SYSTEM_PROMPT;
-    
+
     // Add selected node context if available
-    
     if (promptDto.selectedNodeContext && promptDto.selectedNodeContext.length > 0) {
       const selectedNodeInfo = promptDto.selectedNodeContext
-        .map(node => `- ${node.label} (ID: ${node.id})`)
+        .map((node) => `- ${node.label} (ID: ${node.id})`)
         .join('\n');
       systemPrompt += `\n\n**CURRENT CONTEXT - SELECTED NODES:**\nThe user has the following node(s) currently selected in the graph:\n${selectedNodeInfo}\n\nYou should reference these selected nodes when relevant to their questions.`;
     }

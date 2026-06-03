@@ -347,10 +347,33 @@ If user simpy asks hi, give simple greeting instructions like "Greet the user an
     const model =
       request.model || DEFAULT_MODEL;
 
+    // Build system prompt with network context if available
+    let systemPrompt = this.SYSTEM_PROMPT;
+    if (request.diseaseName || request.networkStatistics) {
+      const contextLines: string[] = [];
+      
+      if (request.diseaseName) {
+        contextLines.push(`Current disease context: ${request.diseaseName}`);
+      }
+      
+      if (request.networkStatistics) {
+        const stats = request.networkStatistics;
+        contextLines.push('Network statistics:');
+        if (stats.totalNodes) contextLines.push(`  - Total nodes: ${stats.totalNodes}`);
+        if (stats.totalEdges) contextLines.push(`  - Total edges: ${stats.totalEdges}`);
+        if (stats.avgDegree) contextLines.push(`  - Average degree: ${stats.avgDegree.toFixed(2)}`);
+        if (stats.density) contextLines.push(`  - Network density: ${stats.density.toFixed(4)}`);
+      }
+      
+      if (contextLines.length > 0) {
+        systemPrompt += `\n\nNetwork Context:\n${contextLines.join('\n')}`;
+      }
+    }
+
     const messages: ModelMessage[] = [
       {
         role: 'system',
-        content: this.SYSTEM_PROMPT,
+        content: systemPrompt,
       },
 
       ...convertToModelMessages(
