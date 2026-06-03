@@ -19,25 +19,32 @@ async function bootstrap() {
   app.set('trust proxy', 'loopback');
 
   const allowedOrigins =
-    process.env.FRONTEND_URLS?.split(',').map(x => x.trim()) ?? [];
+  process.env.FRONTEND_URLS?.split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean) ?? [];
 
-  app.enableCors({
-    origin: (requestOrigin, callback) => {
-      if (!requestOrigin) {
-        return callback(null, true);
-      }
+app.enableCors({
+  origin: (requestOrigin, callback) => {
+    // Allow curl, Postman, server-to-server requests
+    if (!requestOrigin) {
+      return callback(null, true);
+    }
 
-      if (
-        allowedOrigins.includes(requestOrigin) ||
-        process.env.NODE_ENV !== 'production'
-      ) {
-        return callback(null, true);
-      }
+    // Allow everything outside production
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
 
-      callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  }); 
+    // Allow configured frontends
+    if (allowedOrigins.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${requestOrigin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+});
   
   app.use(compression());
   app.use(cookieParser());

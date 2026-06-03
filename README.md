@@ -1,4 +1,4 @@
-# Target & Biomarker Exploration Portal
+# Target & Biomarker Exploration Portal V2
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16742136.svg)](https://doi.org/10.5281/zenodo.16742136)
 
@@ -142,10 +142,10 @@ A complete changelog can be found on [website](https://tbep.missouri.edu/docs/CH
 1. Clone the repository
 
    ```bash
-   git clone --depth 1 --recurse-submodules https://github.com/mizzoudbl/tbep.git && cd tbep
+   git clone https://github.com/23abdul23/tbep.git && cd tbep
    ```
 
-2. Fill environment variables in `.env`, `backend/.env` & `frontend/.env` using [`.env.example`](.env.example), [`backend/.env.example`](https://github.com/mizzoudbl/tbep-backend/blob/main/.env.example) & [`frontend/.env.example](https://github.com/mizzoudbl/tbep-frontend/blob/main/.env.example) file.
+2. Fill environment variables in `.env`, `backend/.env` & `frontend/.env` using [`.env.example`](.env.example), [`backend/.env.example`](https://github.com/23abdul23/tbep/blob/main/.env.example) & [`frontend/.env.example](https://github.com/23abdul23/tbep/blob/main/.env.example) file.
 
    ```bash
    cp .env.example .env
