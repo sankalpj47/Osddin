@@ -1,17 +1,9 @@
 import { unzip } from 'fflate';
 import type { SerializedGraph } from 'graphology-types';
 
-import {
-  parseGEXF,
-  parseGraphML,
-  parseJSON,
-  parseSingleCSV,
-  parseTwoCSV,
-} from './knowledge-graph-parser';
+import { parseGEXF, parseGraphML, parseJSON, parseSingleCSV, parseTwoCSV } from './knowledge-graph-parser';
 
-export async function parseKnowledgeGraph(
-  files: File[],
-): Promise<SerializedGraph> {
+export async function parseKnowledgeGraph(files: File[]): Promise<SerializedGraph> {
   if (files.length === 0) {
     throw new Error('No files provided');
   }
@@ -29,27 +21,16 @@ export async function parseKnowledgeGraph(
       });
     });
 
-    const csvEntries = Object.entries(unzipped).filter(
-      ([name]) => name.toLowerCase().endsWith('.csv'),
-    );
+    const csvEntries = Object.entries(unzipped).filter(([name]) => name.toLowerCase().endsWith('.csv'));
 
     const extractedFiles = csvEntries.map(([name, data]) => {
-      const buffer =
-        data.buffer instanceof ArrayBuffer
-          ? data.buffer
-          : data.slice().buffer;
+      const buffer = data.buffer instanceof ArrayBuffer ? data.buffer : data.slice().buffer;
 
-      return new File(
-        [new Blob([buffer], { type: 'text/csv' })],
-        name,
-      );
+      return new File([new Blob([buffer], { type: 'text/csv' })], name);
     });
 
     if (extractedFiles.length === 2) {
-      return parseTwoCSV(
-        extractedFiles[0],
-        extractedFiles[1],
-      );
+      return parseTwoCSV(extractedFiles[0], extractedFiles[1]);
     }
 
     return parseSingleCSV(extractedFiles[0]);
@@ -62,10 +43,7 @@ export async function parseKnowledgeGraph(
 
   const file = files[0];
 
-  const ext = file.name
-    .split('.')
-    .pop()
-    ?.toLowerCase();
+  const ext = file.name.split('.').pop()?.toLowerCase();
 
   switch (ext) {
     case 'json':
@@ -81,8 +59,6 @@ export async function parseKnowledgeGraph(
       return parseGEXF(file);
 
     default:
-      throw new Error(
-        `Unsupported format: ${ext}`,
-      );
+      throw new Error(`Unsupported format: ${ext}`);
   }
 }

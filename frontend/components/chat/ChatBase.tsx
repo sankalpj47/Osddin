@@ -152,11 +152,9 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
     onChatOpen?.(false);
   };
 
-
   React.useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (messages.length > 0 && lastMessage?.role === 'assistant' && status === 'submitted') {
-   
       createCheckpoint(messages.length - 1);
     }
   }, [messages, status, createCheckpoint]);
@@ -180,7 +178,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
           return (
             <React.Fragment key={message.id}>
               <div className='fade-in slide-in-from-bottom-10 animate-in duration-300'>
-              
                 {hasAttachments && (
                   <MessageAttachments className='mb-2'>
                     {message.parts
@@ -245,7 +242,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
                         </Reasoning>
                       );
                     case 'file':
-                  
                       return null;
                     default:
                       return null;
@@ -253,7 +249,6 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
                 })}
               </div>
 
-   
               {checkpoint && (
                 <Checkpoint className='my-4'>
                   <CheckpointIcon />
@@ -272,12 +267,11 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
   );
 
   const renderPromptInput = () => {
-
     const selectedModelData = LLM_MODELS.find(m => m.id === model);
 
     return (
       <PromptInputProvider>
-        <PromptInput globalDrop multiple onSubmit={handleSubmit} >
+        <PromptInput globalDrop multiple onSubmit={handleSubmit}>
           <PromptInputAttachments>{attachment => <PromptInputAttachment data={attachment} />}</PromptInputAttachments>
           <PromptInputBody>
             <PromptInputTextarea ref={textareaRef} disabled={status === 'error'} />

@@ -1,7 +1,6 @@
 'use client';
 import { useLazyQuery } from '@apollo/client/react';
 import { useLoadGraph, useSigma } from '@react-sigma/core';
-import type EventEmitter from 'events';
 import Graph from 'graphology';
 import type { SerializedGraph } from 'graphology-types';
 import { AlertTriangleIcon } from 'lucide-react';
@@ -44,7 +43,7 @@ export function LoadGraph() {
   const [fetchFileData] = useLazyQuery<GeneVerificationData, GeneVerificationVariables>(GENE_VERIFICATION_QUERY);
   const [showWarning, setShowWarning] = React.useState<boolean>(false);
 
-  const sigma = useSigma();
+  const _sigma = useSigma();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: No need of extra deps
   React.useEffect(() => {
@@ -128,14 +127,13 @@ export function LoadGraph() {
           const geneNameToID = new Map<string, string>();
           const geneNames: string[] = [];
           const verifiedGenes = result.data?.genes ?? [];
-          for (const [index, gene] of verifiedGenes.entries()) {
+          for (const [_index, gene] of verifiedGenes.entries()) {
             geneNames.push(gene.Gene_name ?? gene.ID);
             if (gene.Gene_name) geneNameToID.set(gene.Gene_name, gene.ID);
             graph.addNode(gene.ID, {
               label: gene.Gene_name,
               ID: gene.ID,
               description: gene.Description,
-              
             });
           }
 
@@ -203,9 +201,7 @@ export function LoadGraph() {
           localStorage.setItem('graphConfig', JSON.stringify({ ...graphConfig, graphName }));
           useStore.setState({ graphConfig: { ...graphConfig, graphName } });
           const transformedData: Partial<SerializedGraph<NodeAttributes, EdgeAttributes>> = {
-            nodes: genes.map((gene, index) => {
-
-
+            nodes: genes.map((gene, _index) => {
               return {
                 key: gene.ID,
                 attributes: {
@@ -232,7 +228,7 @@ export function LoadGraph() {
           if (transformedData) {
             graph.import(transformedData);
             loadGraph(graph);
-           
+
             const geneNameToID = new Map<string, string>();
             for (const gene of genes) {
               if (gene.Gene_name) geneNameToID.set(gene.Gene_name, gene.ID);

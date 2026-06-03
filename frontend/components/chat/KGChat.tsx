@@ -57,7 +57,7 @@ import {
   PromptInputTools,
 } from '../ai-elements/prompt-input';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '../ai-elements/reasoning';
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '../ai-elements/tool';
+import { ActivityTimeline, ExecutionPlan, ToolDrawer } from './ResearchAssistant';
 
 type CheckpointType = {
   id: string;
@@ -97,16 +97,7 @@ export interface KGChatRenderProps {
   renderPromptInput: () => React.ReactNode;
 }
 
-/**
- * KGChat Component
- * Knowledge Graph-aware chat with client-side tool execution
- *
- * Key differences from ChatBase:
- * - Uses /kg-chat endpoint instead of /llm
- * - Implements onToolCall for client-side tool execution
- * - Builds graph context and property search index on mount
- * - Renders tool results inline with messages
- */
+
 export function KGChat({ onChatOpen, children }: KGChatProps) {
   const [model, setModel] = React.useState<(typeof LLM_MODELS)[number]['id']>(LLM_MODELS[0].id);
   const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
@@ -171,13 +162,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
             throw new Error(`Tool '${toolCall.toolName}' not found in registry`);
           }
 
-          // Execute tool with input and context
-          // NOTE: TypeScript cannot statically verify the relationship between toolCall.toolName
-          // and the correct input type because KG_TOOLS is a heterogeneous registry (each tool
-          // has different input/output types). Runtime safety is guaranteed by:
-          // 1. AI SDK validates toolCall.input against zod schemas before this callback
-          // 2. Tool implementations validate their inputs and return typed ToolResult<T>
-          // biome-ignore lint/suspicious/noExplicitAny: TypeScript limitation with heterogeneous tool registry, runtime type safety via zod
+   
           const result = await toolFn(toolCall.input as any, toolContext);
 
           // Check if tool execution was successful
@@ -189,7 +174,6 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
           addToolOutput({
             tool: toolCall.toolName,
             toolCallId: toolCall.toolCallId,
-            // biome-ignore lint/suspicious/noExplicitAny: Output type matches the tool's return type, AI SDK handles downstream typing
             output: result.data as any,
           });
 
@@ -345,7 +329,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
         return null;
       }
     },
-    [messages, model, sessionId],
+    [model, sessionId],
   );
 
   const handleSubmit = async (message: PromptInputMessage) => {
@@ -418,15 +402,29 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
                   </MessageAttachments>
                 )}
 
-                {message.parts.map((part, i) => {
-                  switch (part.type) {
-                    case 'text':
-                      return (
-                        <React.Fragment key={`${message.id}-${i}`}>
+                {(() => {
+                  const textParts = message.parts.filter(part => part.type === 'text');
+                  const reasoningParts = message.parts.filter(part => part.type === 'reasoning');
+                  const toolParts = message.parts.filter(
+                    part =>
+                      (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) &&
+                      'state' in part &&
+                      'input' in part,
+                  );
+
+                  const isLatestAssistantMessage =
+                    message.role === 'assistant' &&
+                    messageIndex === messages.findLastIndex(m => m.role === 'assistant');
+
+                  return (
+                    <React.Fragment>
+                      {/* 1. Text Message */}
+                      {textParts.length > 0 && (
+                        <React.Fragment>
                           <Message from={message.role}>
                             <MessageContent className='shadow-md'>
                               <MessageResponse isAnimating={status === 'submitted' && message.role === 'assistant'}>
-                                {part.text}
+                                {textParts.map(p => p.text).join('\n')}
                               </MessageResponse>
                             </MessageContent>
                             <MessageAvatar
@@ -442,7 +440,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
                                   <RefreshCcwIcon className='size-3' />
                                 </MessageAction>
                               )}
-                              <MessageCopyAction text={part.text} />
+                              <MessageCopyAction text={textParts.map(p => p.text).join('\n')} />
                               {!checkpoint && (
                                 <MessageAction
                                   onClick={() => createCheckpoint(messageIndex)}
@@ -455,51 +453,33 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
                             </MessageActions>
                           )}
                         </React.Fragment>
-                      );
-                    case 'reasoning':
-                      return (
+                      )}
+
+                      {/* 2. Reasoning */}
+                      {reasoningParts.map((part, i) => (
                         <Reasoning
-                          key={`${message.id}-${i}`}
+                          key={`${message.id}-reasoning-${i}`}
                           className='w-full'
-                          isStreaming={
-                            status === 'streaming' &&
-                            i === message.parts.length - 1 &&
-                            message.id === messages.at(-1)?.id
-                          }
+                          isStreaming={status === 'streaming' && message.id === messages.at(-1)?.id}
                         >
                           <ReasoningTrigger />
                           <ReasoningContent className='rounded-md border p-2 text-black'>{part.text}</ReasoningContent>
                         </Reasoning>
-                      );
-                    case 'file':
-                      // Files are rendered separately above
-                      return null;
-                    default:
-                      // Tool-related parts (includes both 'dynamic-tool' and 'tool-*' types)
-                      if (
-                        (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) &&
-                        'state' in part &&
-                        'input' in part
-                      ) {
-                        // biome-ignore lint/suspicious/noExplicitAny: Tool part types are complex unions from AI SDK
-                        const toolPart = part as any;
-                        const toolName =
-                          part.type === 'dynamic-tool' ? toolPart.toolName : part.type.replace('tool-', '');
+                      ))}
 
-                        return (
-                          <Tool key={`${message.id}-${i}`} defaultOpen>
-                            {/* biome-ignore lint/suspicious/noExplicitAny: ToolUIPart type union requires type assertion for compatibility */}
-                            <ToolHeader title={toolName} type={part.type as any} state={toolPart.state} />
-                            <ToolContent>
-                              <ToolInput input={toolPart.input} />
-                              <ToolOutput output={toolPart.output} errorText={toolPart.errorText} />
-                            </ToolContent>
-                          </Tool>
-                        );
-                      }
-                      return null;
-                  }
-                })}
+                      {/* 3. Activity Timeline */}
+                      {message.role === 'assistant' && <ActivityTimeline toolParts={toolParts} />}
+
+                      {/* 4. Execution Plan */}
+                      {message.role === 'assistant' && (
+                        <ExecutionPlan plan={isLatestAssistantMessage ? plan : null} toolParts={toolParts} />
+                      )}
+
+                      {/* 5. Tool Drawer */}
+                      {message.role === 'assistant' && <ToolDrawer toolParts={toolParts} />}
+                    </React.Fragment>
+                  );
+                })()}
               </div>
 
               {/* Render checkpoint if it exists at this message */}
