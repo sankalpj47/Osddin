@@ -112,7 +112,7 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
 
     // Build system prompt with network context if available
     let systemPrompt = this.SYSTEM_PROMPT;
-    if (promptDto.diseaseName || promptDto.networkStatistics) {
+    if (promptDto.diseaseName || promptDto.networkStatistics || promptDto.selectedNodeContext) {
       const contextLines: string[] = [];
 
       if (promptDto.diseaseName) {
@@ -126,6 +126,14 @@ REMEMBER: You are driving a powerful visualization dashboard. Your tool calls di
         if (stats.totalEdges) contextLines.push(`  - Total edges: ${stats.totalEdges}`);
         if (stats.avgDegree) contextLines.push(`  - Average degree: ${stats.avgDegree.toFixed(2)}`);
         if (stats.density) contextLines.push(`  - Network density: ${stats.density.toFixed(4)}`);
+      }
+
+      if (promptDto.selectedNodeContext && promptDto.selectedNodeContext.length > 0) {
+        const selectedNodeInfo = promptDto.selectedNodeContext
+          .map(node => `- ${node.label} (ID: ${node.id})`)
+          .join('\n');
+        contextLines.push('Selected node context:');
+        contextLines.push(selectedNodeInfo);
       }
 
       if (contextLines.length > 0) {
