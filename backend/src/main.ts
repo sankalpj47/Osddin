@@ -23,21 +23,24 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (requestOrigin, callback) => {
+      const allowed = process.env.FRONTEND_URL;
+
+      // Allow server-to-server / curl / Postman
       if (!requestOrigin) {
         return callback(null, true);
       }
 
-      if (
-        allowedOrigins.includes(requestOrigin) ||
-        process.env.NODE_ENV !== 'production'
-      ) {
-        return callback(null, true);
+      if (allowed === requestOrigin || process.env.NODE_ENV != 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
 
       callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
-  }); 
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  });
   
   app.use(compression());
   app.use(cookieParser());
