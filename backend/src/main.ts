@@ -20,20 +20,23 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (requestOrigin, callback) => {
-      if (configService.get('NODE_ENV', 'development') === 'production') {
-        const FRONTEND_URL = configService.get<string | undefined>('FRONTEND_URL');
-        if (!FRONTEND_URL || requestOrigin === FRONTEND_URL) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      } else {
+      const allowed = process.env.FRONTEND_URL;
+
+      // Allow server-to-server / curl / Postman
+      if (!requestOrigin) {
+        return callback(null, true);
+      }
+
+      if (allowed === requestOrigin || process.env.NODE_ENV != 'production') {
         callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
-    methods: 'GET, POST',
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
   });
+  
   app.use(compression());
   app.use(cookieParser());
   await app.listen(configService.get('PORT', 4000));
