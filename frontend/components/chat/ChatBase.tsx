@@ -7,6 +7,7 @@ import React from 'react';
 import { toast } from 'sonner';
 import { LLM_MODELS } from '@/lib/data';
 import { generateSessionId, getUserId } from '@/lib/langfuse-tracking';
+import { useStore } from '@/lib/hooks';
 import { cn, envURL } from '@/lib/utils';
 import { Checkpoint, CheckpointIcon, CheckpointTrigger } from '../ai-elements/checkpoint';
 import { Conversation, ConversationContent, ConversationScrollButton } from '../ai-elements/conversation';
@@ -143,7 +144,28 @@ export function ChatBase({ onChatOpen, children }: ChatBaseProps) {
     }
 
     onChatOpen?.(true);
-    sendMessage({ text: message.text }, { body: { model, sessionId, userId: getUserId() } });
+    
+    // Extract network graph context from store
+    const { diseaseName, selectedNodes, networkStatistics } = useStore.getState();
+    const selectedNodeContext = selectedNodes?.map(node => ({
+      id: node.ID,
+      label: node.Gene_Name,
+    })) ?? [];
+    
+    // Build body with optional network context
+    const body: any = { model, sessionId, userId: getUserId() };
+    if (diseaseName) body.diseaseName = diseaseName;
+    if (networkStatistics && Object.keys(networkStatistics).length > 0) {
+      body.networkStatistics = {
+        totalNodes: networkStatistics.totalNodes,
+        totalEdges: networkStatistics.totalEdges,
+        avgDegree: networkStatistics.avgDegree,
+        density: networkStatistics.density,
+      };
+    }
+    if (selectedNodeContext.length > 0) body.selectedNodeContext = selectedNodeContext;
+    
+    sendMessage({ text: message.text }, { body });
   };
 
   const handleDeleteMessages = () => {

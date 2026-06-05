@@ -115,7 +115,7 @@ export function ChatWindow() {
                             >
                               Privacy Policy
                             </Link>
-                            . <b>Also, currently this graph is not connected to the AI assistant.</b>
+                            . Now connected to the graph! Select nodes to include them in your query context.
                           </p>
                         </AlertDescription>
                       </Alert>

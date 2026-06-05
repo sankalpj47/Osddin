@@ -341,6 +341,8 @@ export function GraphEvents({
               attr.highlighted = true;
             });
           }
+
+          handleSelectedNodes([e.node]);
           return e.node;
         });
       },

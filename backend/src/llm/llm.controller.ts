@@ -63,8 +63,7 @@ export class LlmController {
     @Body() promptDto: PromptDto,
     @Res() res: Response,
   ) {
-    const request =
-      this.toTraceRequest(promptDto);
+    const request = this.toTraceRequest(promptDto);
 
     return observe(
       async () => {
@@ -74,8 +73,7 @@ export class LlmController {
 
             userId: request.userId,
 
-            sessionId:
-              request.sessionId,
+            sessionId: request.sessionId,
 
             metadata: {
               model:
@@ -97,15 +95,9 @@ export class LlmController {
             res,
           );
         } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate response stream';
+          const errorMessage = error instanceof Error ? error.message  : 'Failed to generate response stream';
 
-          throw new HttpException(
-            errorMessage,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+          throw new HttpException( errorMessage, HttpStatus.INTERNAL_SERVER_ERROR,);
         }
       },
 
