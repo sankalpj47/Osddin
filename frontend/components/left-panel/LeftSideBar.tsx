@@ -1,6 +1,6 @@
 'use client';
 import { useLazyQuery } from '@apollo/client/react';
-import {  RotateCcw, Upload, ChevronDown, ChevronRight,HelpCircleIcon } from 'lucide-react';
+import {  SquareDashedMousePointerIcon, Upload, ChevronDown, ChevronRight ,RotateCcw} from 'lucide-react';
 import { redirect } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -281,7 +281,7 @@ export function LeftSideBar() {
                 type="button"
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-2xs transition-colors hover:bg-gray-50 active:bg-gray-100"
               >
-                <HelpCircleIcon className="size-3.5 text-gray-500" />
+                <SquareDashedMousePointerIcon className="size-3.5 text-gray-500" />
                 <span>Shortcuts</span>
               </button>
             </TooltipTrigger>

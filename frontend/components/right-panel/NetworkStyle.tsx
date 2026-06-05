@@ -117,7 +117,7 @@ export function NetworkStyle() {
                   side="top" 
                   align="start" 
                   sideOffset={4} 
-                  className="max-w-xs p-2.5 text-xs bg-emerald-600 text-white border-none shadow-md rounded-lg leading-relaxed font-medium"
+                  className="max-w-xs p-2.5 text-xs bg-primary text-white border-none shadow-md rounded-lg leading-relaxed font-medium"
                 >
                   Adjust the density threshold for rendering text annotations across nodes and connector groups.
                 </TooltipContent>

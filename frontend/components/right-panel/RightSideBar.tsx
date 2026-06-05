@@ -38,9 +38,6 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
         className="flex cursor-pointer items-center justify-between bg-white px-4 py-3 select-none hover:bg-gray-50/80 active:bg-gray-50"
       >
         <div className="flex items-center gap-2.5">
-          <div className="text-teal-600 shrink-0">
-            {icon}
-          </div>
           <span className="text-xs font-bold text-gray-800 tracking-tight">
             {title}
           </span>
@@ -67,13 +64,7 @@ export function RightSideBar() {
           <RadialAnalysis />
         </NetworkAnalysis>
       </SectionModule>
-      <SectionModule title="Network Info" icon={<InfoIcon className="size-5" />}>
-        <NetworkInfo />
-      </SectionModule>
-      <SectionModule title="" icon={<LayersIcon className="size-5" />} defaultOpen={false}>
-        <Legend />
-      </SectionModule>
-      <SectionModule title="Layout Configuration" icon={<SlidersIcon className="size-5" />} defaultOpen={false}>
+      <SectionModule title="Network Layout" icon={<SlidersIcon className="size-5" />} defaultOpen={false}>
         <NetworkLayout />
       </SectionModule>
       <SectionModule title="Network Style" icon={<PaintbrushIcon className="size-5" />} defaultOpen={false}>

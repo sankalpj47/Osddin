@@ -50,7 +50,7 @@ export function RadialAnalysis() {
                   side="top" 
                   align="start" 
                   sideOffset={4} 
-                  className="max-w-xs p-2.5 text-xs bg-emerald-600 text-white border border-gray-200 shadow-md rounded-lg leading-relaxed"
+                  className="max-w-xs p-2.5 text-xs bg-primary text-white border border-gray-200 shadow-md rounded-lg leading-relaxed"
                 >
                   {option.tooltip}
                 </TooltipContent>

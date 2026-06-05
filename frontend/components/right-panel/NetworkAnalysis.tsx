@@ -39,7 +39,6 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
     };
     eventEmitter.on(Events.ALGORITHM_RESULTS, handleResults);
     return () => {
-      // Clean up event listeners to prevent memory leaks during rapid panel resizing
       eventEmitter.off(Events.ALGORITHM_RESULTS, handleResults);
     };
   }, []);
@@ -57,99 +56,135 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
   };
 
   return (
-
     <div className="w-full flex flex-col min-w-0">
       
-      <div className="mb-3 flex flex-col gap-2">     
-        <RadioGroup 
-          value={selectedAlgo} 
-          onValueChange={(val) => {
-            setSelectedAlgo(val);
-            if (val === 'None') handleAlgoQuery('None');
-          }}
-          className="flex flex-col gap-2 rounded-lg border border-gray-100 bg-gray-50/50 p-2.5"
-        >
-          {algorithms.slice(0, 2).map(({ name, parameters }) => (
-            <Popover key={name}>
-              <div className="flex items-center justify-between w-full rounded-md px-1 py-0.5 hover:bg-white/60 transition-colors">
-                <div className="flex items-center space-x-2.5 grow">
-                  <RadioGroupItem 
-                    value={name} 
-                    id={`algo-${name}`}
-                    className="border-gray-300 text-teal-600 focus:ring-teal-500 size-3.5" 
-                  />
-                  <Label htmlFor={`algo-${name}`} className="text-xs font-medium text-gray-700 cursor-pointer select-none">
-                    {name}
-                  </Label>
-                </div>
+      {/* Primary Sub-Navigation Tab Splitter */}
+      <Tabs defaultValue="type" className="w-full flex flex-col">
+        <TabsList className="grid w-full grid-cols-2 rounded-lg bg-gray-100 p-1 mb-3 h-8.5">
+          <TabsTrigger 
+            value="type" 
+            className="rounded-md py-1 text-xs font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-2xs"
+          >
+            Type
+          </TabsTrigger>
+          <TabsTrigger 
+            value="settings" 
+            className="rounded-md py-1 text-xs font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-2xs"
+          >
+            Settings
+          </TabsTrigger>
+        </TabsList>
 
-                {parameters.length > 0 && selectedAlgo === name && (
-                  <PopoverTrigger asChild>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 gap-1 px-2 text-[11px] font-medium text-teal-600 hover:bg-teal-50 hover:text-teal-700 rounded-md shrink-0"
-                    >
-                      <Settings2Icon className="size-3" />
-                      Configure
-                    </Button>
-                  </PopoverTrigger>
-                )}
-              </div>
-              
-              {parameters.length > 0 && (
-                <PopoverContent side="left" align="start" sideOffset={10} className="w-64 p-4 rounded-xl border border-gray-200 bg-white shadow-xl z-30">
-                  <form className="flex flex-col space-y-3.5" action={f => handleAlgoQuery(name, f)}>
-                    <div className="border-b border-gray-100 pb-1.5">
-                      <h4 className="text-xs font-bold text-gray-800">{name} Parameters</h4>
-                    </div>
-                    
-                    {parameters.map(param => {
-                      if (param.type === 'slider') {
+        {/* =========================================================================
+            PANEL 1: TYPE CONTENT (Algorithm Selection Viewport)
+           ========================================================================= */}
+        <TabsContent value="type" className="focus-visible:outline-none mt-0 flex flex-col gap-2.5">
+          <span className="text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
+            Clustering Strategy
+          </span>
+          
+          <RadioGroup 
+            value={selectedAlgo} 
+            onValueChange={(val) => {
+              setSelectedAlgo(val);
+              if (val === 'None') handleAlgoQuery('None');
+            }}
+            className="flex flex-col gap-2 rounded-lg border border-gray-50 bg-white p-2.5 shadow-3xs"
+          >
+            {algorithms.slice(0, 2).map(({ name, parameters }) => (
+              <Popover key={name}>
+                <div className="flex items-center justify-between w-full rounded-md px-1 py-0.5 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-2.5 grow">
+                    <RadioGroupItem 
+                      value={name} 
+                      id={`algo-${name}`}
+                      className="border-gray-300 text-teal-600 focus:ring-teal-500 size-3.5" 
+                    />
+                    <Label htmlFor={`algo-${name}`} className="text-xs font-bold text-gray-700 cursor-pointer select-none">
+                      {name}
+                    </Label>
+                  </div>
+
+                  {parameters.length > 0 && selectedAlgo === name && (
+                    <PopoverTrigger asChild>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 gap-1 px-2 text-[11px] font-medium text-teal-600 hover:bg-teal-50 hover:text-teal-700 rounded-md shrink-0"
+                      >
+                        <Settings2Icon className="size-3" />
+                        Configure
+                      </Button>
+                    </PopoverTrigger>
+                  )}
+                </div>
+                
+                {parameters.length > 0 && (
+                  <PopoverContent side="left" align="start" sideOffset={10} className="w-64 p-4 rounded-xl border border-gray-200 bg-white shadow-xl z-30">
+                    <form className="flex flex-col space-y-3.5" action={f => handleAlgoQuery(name, f)}>
+                      <div className="border-b border-gray-100 pb-1.5">
+                        <h4 className="text-xs font-bold text-gray-800">{name} Parameters</h4>
+                      </div>
+                      
+                      {parameters.map(param => {
+                        if (param.type === 'slider') {
+                          return (
+                            <div key={param.name} className="space-y-1.5">
+                              <Label htmlFor={param.name} className="text-xs font-semibold text-gray-600">
+                                {param.displayName}
+                              </Label>
+                              <SliderWithInput
+                                min={param.min}
+                                max={param.max}
+                                step={param.step}
+                                id={param.name}
+                                defaultValue={param.defaultValue as number}
+                              />
+                            </div>
+                          );
+                        }
                         return (
-                          <div key={param.name} className="space-y-1.5">
-                            <Label htmlFor={param.name} className="text-xs font-semibold text-gray-600">
+                          <div key={param.name} className="flex items-center justify-between gap-4 rounded-lg bg-gray-50 p-2 border border-gray-100">
+                            <Label htmlFor={param.name} className="text-xs font-semibold text-gray-600 cursor-pointer">
                               {param.displayName}
                             </Label>
-                            <SliderWithInput
-                              min={param.min}
-                              max={param.max}
-                              step={param.step}
-                              id={param.name}
-                              defaultValue={param.defaultValue as number}
+                            <Checkbox 
+                              name={param.name} 
+                              id={param.name} 
+                              defaultChecked={param.defaultValue as boolean}
+                              className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                             />
                           </div>
                         );
-                      }
-                      return (
-                        <div key={param.name} className="flex items-center justify-between gap-4 rounded-lg bg-gray-50 p-2 border border-gray-100">
-                          <Label htmlFor={param.name} className="text-xs font-semibold text-gray-600 cursor-pointer">
-                            {param.displayName}
-                          </Label>
-                          <Checkbox 
-                            name={param.name} 
-                            id={param.name} 
-                            defaultChecked={param.defaultValue as boolean}
-                            className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
-                          />
-                        </div>
-                      );
-                    })}
-                    
-                    <Button type="submit" size="sm" className="w-full h-8 rounded-lg bg-[#00796B] text-xs font-semibold text-white hover:bg-[#00695C]">
-                      Apply Parameters
-                    </Button>
-                  </form>
-                </PopoverContent>
-              )}
-            </Popover>
-          ))}
-        </RadioGroup>
-      </div>
+                      })}
+                      
+                      <Button type="submit" size="sm" className="w-full h-8 rounded-lg bg-[#00796B] text-xs font-semibold text-white hover:bg-[#00695C]">
+                        Apply Parameters
+                      </Button>
+                    </form>
+                  </PopoverContent>
+                )}
+              </Popover>
+            ))}
+          </RadioGroup>
+        </TabsContent>
 
+        {/* =========================================================================
+            PANEL 2: SETTINGS CONTENT (Threshold & Property Sliders)
+           ========================================================================= */}
+        <TabsContent value="settings" className="focus-visible:outline-none mt-0 flex flex-col min-w-0">
+          {children && (
+            <div className="flex flex-col min-w-0">
+              {children}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Embedded Metric Outputs - Kept global at card bottom or layout dependent */}
       {algorithmResults?.communities && (
-        <div className="mt-1 flex flex-col gap-2 rounded-xl border border-gray-100 bg-white p-3 shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="mt-3 flex flex-col gap-2 rounded-xl border border-gray-100 bg-white p-3 shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200">
           <span className="text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
             Clustering Metrics
           </span>
@@ -175,6 +210,7 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
             Inspect Communities ({algorithmResults.communities?.length})
           </Button>
 
+          {/* Modal Overlay Sheet */}
           <Dialog open={showTable} onOpenChange={setShowTable}>
             <DialogContent className="flex max-h-[90vh] min-h-[60vh] max-w-6xl flex-col gap-4 p-6 rounded-2xl border border-gray-200 bg-white shadow-2xl">
               <div>
@@ -238,12 +274,6 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
-      )}
-
-      {children && (
-        <div className="mt-3 border-t border-gray-100 pt-3 flex flex-col min-w-0">
-          {children}
         </div>
       )}
     </div>

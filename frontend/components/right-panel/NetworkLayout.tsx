@@ -102,7 +102,7 @@ export function NetworkLayout() {
             <div className="flex items-center w-full px-1 py-1">
               <Slider
                 id={option.key}
-                className="w-full data-[disabled]:opacity-50"
+                className="w-full data-[disabled]:opacity-"
                 min={option.min}
                 max={option.max}
                 step={option.step}
