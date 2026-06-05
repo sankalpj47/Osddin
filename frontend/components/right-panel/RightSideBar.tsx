@@ -12,9 +12,7 @@ import {
 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { 
-  Legend, 
   NetworkAnalysis, 
-  NetworkInfo, 
   NetworkLayout, 
   NetworkStyle, 
   RadialAnalysis 

@@ -73,10 +73,10 @@ export function Legend() {
               divisions={10}
             />
           ) : (
-            <p className='text-center font-semibold'>No Legends Available</p>
+            <p className='text-center font-semibold'>No Legend Available</p>
           )
         ) : (
-          <p className='text-center font-semibold'>Select Data-points on left to view legends!</p>
+          <p className='text-center font-semibold'>Select Data-points on right to view legends!</p>
         )}
         {showEdgeColor && (
           <HeatmapLegend

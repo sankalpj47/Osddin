@@ -342,7 +342,6 @@ export function GraphEvents({
             });
           }
 
-          handleSelectedNodes([e.node]);
           return e.node;
         });
       },
