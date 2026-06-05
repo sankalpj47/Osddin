@@ -1,3 +1,5 @@
+'use client';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CheckIcon, ChevronsUpDownIcon, InfoIcon } from 'lucide-react';
 import * as React from 'react';
@@ -17,82 +19,96 @@ interface VirtualizedCommandProps {
 }
 
 const VirtualizedCommand = ({ options, selectedOption, onSelectOption }: VirtualizedCommandProps) => {
-  // Create a memoized search engine to avoid recreating on renders
   const searchEngine = React.useMemo(() => {
     return new OptimizedMedicalSearch(options);
-  }, [options]); // Only recreate when options change
+  }, [options]);
 
   const [filteredOptions, setFilteredOptions] = React.useState<SearchItem[]>(options);
   const parentRef = React.useRef<HTMLDivElement>(null);
 
+  React.useEffect(() => {
+    setFilteredOptions(options);
+  }, [options]);
+
   const virtualizer = useVirtualizer({
     count: filteredOptions.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 35,
-    overscan: 5,
+    estimateSize: () => 38, 
+    overscan: 6,
   });
 
   const virtualOptions = virtualizer.getVirtualItems();
 
   const handleSearch = React.useCallback(
     (search: string) => {
-      if (!search || search.length < 2) {
+      if (!search || search.trim().length < 2) {
         setFilteredOptions(options);
         return;
       }
-      // Use the optimized search engine for searching with debouncing
-      searchEngine.debouncedSearch(search, results => setFilteredOptions(results));
+      searchEngine.debouncedSearch(search.trim(), results => setFilteredOptions(results));
     },
     [options, searchEngine],
   );
 
   return (
-    <Command style={{ width: '800px' }} shouldFilter={false}>
-      <CommandInput onValueChange={handleSearch} placeholder={'Search Disease...'} />
-      {options.length === 0 ? <Spinner variant={1} size={'small'} /> : <CommandEmpty>No Result Found.</CommandEmpty>}
-      <CommandGroup>
-        <CommandList ref={parentRef}>
-          <div
-            style={{
-              height: `${virtualizer.getTotalSize()}px`,
-              width: '100%',
-              position: 'relative',
-            }}
-          >
-            {virtualOptions.map(virtualOption => {
-              const option = filteredOptions[virtualOption.index];
-              return (
-                <CommandItem
-                  className='absolute flex w-full justify-between overflow-visible'
-                  style={{
-                    transform: `translateY(${virtualOption.start}px)`,
-                  }}
-                  key={option.id}
-                  value={option.id}
-                  onSelect={onSelectOption}
-                >
-                  <div className='item-center flex'>
-                    <CheckIcon
-                      className={cn('mr-2 size-4', selectedOption === option.id ? 'opacity-100' : 'opacity-0')}
-                    />
-                    {`${option.label}`}
-                  </div>
-                  {option.description && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <InfoIcon className='ml-2 size-4 cursor-pointer' />
-                      </TooltipTrigger>
-                      <TooltipContent side='left' align='start' className='max-w-48'>
-                        {option.description}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </CommandItem>
-              );
-            })}
+    <Command className="w-full" shouldFilter={false}>
+      <CommandInput onValueChange={handleSearch} placeholder="Search Disease..." className="h-9" />
+      <CommandList ref={parentRef} className="max-h-[300px] overflow-y-auto">
+        {options.length === 0 ? (
+          <div className="flex items-center justify-center py-6">
+            <Spinner variant={1} size="small" />
           </div>
-        </CommandList>
-      </CommandGroup>
+        ) : filteredOptions.length === 0 ? (
+          <CommandEmpty className="py-4 text-center text-xs text-gray-500">No Result Found.</CommandEmpty>
+        ) : (
+          <CommandGroup>
+            <div
+              style={{
+                height: `${virtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {virtualOptions.map(virtualOption => {
+                const option = filteredOptions[virtualOption.index];
+                if (!option) return null;
+                
+                return (
+                  <CommandItem
+                    className="absolute top-0 left-0 flex w-full items-center justify-between px-3 py-2 text-xs transition-colors cursor-pointer"
+                    style={{
+                      height: '38px',
+                      transform: `translateY(${virtualOption.start}px)`,
+                    }}
+                    key={option.id}
+                    value={option.id}
+                    onSelect={onSelectOption}
+                  >
+                    <div className="flex items-center min-w-0 pr-2">
+                      <CheckIcon
+                        className={cn('mr-2 size-3.5 shrink-0 text-teal-600', selectedOption === option.id ? 'opacity-100' : 'opacity-0')}
+                      />
+                      <span className="truncate font-medium text-gray-700">{option.label}</span>
+                    </div>
+                    {option.description && (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <div onClick={(e) => e.stopPropagation()} className="p-0.5 hover:bg-gray-100 rounded-sm">
+                            <InfoIcon className="size-3.5 text-gray-400 hover:text-gray-600 cursor-help shrink-0" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" align="center" className="max-w-xs text-xs leading-normal p-2 shadow-md">
+                          {option.description}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </CommandItem>
+                );
+              })}
+            </div>
+          </CommandGroup>
+        )}
+      </CommandList>
     </Command>
   );
 };
@@ -113,12 +129,12 @@ export function DiseaseMapCombobox({
   align = 'start',
 }: DiseaseMapComboboxProps) {
   const [open, setOpen] = React.useState<boolean>(false);
-  // Use the search hook with initial data from props
+
   const searchItems: SearchItem[] = React.useMemo(
     () =>
       data.map(item => ({
         id: item.ID,
-        label: `${item.name} (${item.ID})`,
+        label: item.name ? `${item.name} (${item.ID})` : item.ID,
         description: item.description,
       })),
     [data],
@@ -132,28 +148,28 @@ export function DiseaseMapCombobox({
     return map;
   }, [searchItems]);
 
+  const selectedLabel = optionsMap.get(value)?.label || 'Search Disease...';
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant='outline'
-          role='combobox'
+          variant="outline"
+          role="combobox"
           aria-expanded={open}
           className={cn(
-            'wrap-break-word h-9 w-[200px] justify-between text-ellipsis text-wrap bg-accent-foreground',
+            'h-9 w-full justify-between rounded-lg border border-gray-200 bg-white px-3 text-left text-xs font-semibold text-gray-700 shadow-xs transition-all hover:bg-gray-50 focus:border-teal-500 focus:ring-1 focus:ring-teal-500',
             className,
           )}
         >
-          <span className='truncate'>{optionsMap.get(value)?.label || 'Search Disease...'}</span>
-          <ChevronsUpDownIcon className='ml-2 size-4 shrink-0 opacity-50' />
+          <span className="truncate pr-2">{selectedLabel}</span>
+          <ChevronsUpDownIcon className="size-3.5 shrink-0 text-gray-400 opacity-80" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
         align={align}
-        className={cn(
-          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 w-[800px] p-0',
-          className,
-        )}
+        sideOffset={6}
+        className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[360px] p-0 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden"
       >
         <VirtualizedCommand
           options={searchItems}

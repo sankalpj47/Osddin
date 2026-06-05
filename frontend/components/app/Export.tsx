@@ -47,44 +47,60 @@ export function Export() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
+        {/* CRITICAL FIXES APPLIED:
+          - Replaced rigid w-[calc(100%-1.5rem)] with w-full to adapt to the 50/50 sidebar grid.
+          - Stripped hardcoded zinc background and margin-bottom shifts.
+          - Styled to match the "Shortcuts" component button structure exactly.
+        */}
         <Button
-          variant='outline'
-          size='sm'
-          className='mr-2 mb-2 w-[calc(100%-1.5rem)] rounded-sm border-none bg-zinc-200 text-xs hover:bg-zinc-300 hover:text-black'
+          variant="outline"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-2xs transition-colors hover:bg-gray-50 active:bg-gray-100"
         >
-          <FolderUpIcon className='size-3' />
-          Export
+          <FolderUpIcon className="size-3.5 text-gray-500" />
+          <span>Export</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='z-10 w-36 gap-1 rounded-md border bg-zinc-100 p-1 shadow-sm'>
+      
+      {/* Modernized dropdown menu layout theme overlays */}
+      <DropdownMenuContent className="z-10 w-40 gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-md">
         {exportOptions.map(opt =>
           opt.hasSubmenu ? (
             <DropdownMenuSub key={opt.label}>
-              <DropdownMenuSubTrigger className='cursor-pointer'>{opt.label.toUpperCase()}</DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className='z-20 flex w-48 flex-col gap-2 rounded-md border bg-zinc-100 p-2 shadow-sm'>
-                <div className='flex cursor-pointer items-center gap-2 px-2 py-1'>
+              <DropdownMenuSubTrigger className="cursor-pointer text-xs font-medium text-gray-700 focus:bg-gray-50 data-[state=open]:bg-gray-50">
+                {opt.label.toUpperCase()}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="z-20 flex w-48 flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+                <div className="flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 hover:bg-gray-50">
                   <Checkbox
                     id={universalCheckBoxId}
                     checked={csvSelections.universal}
                     onCheckedChange={() => handleCheckboxChange('universal')}
+                    className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                   />
-                  <label htmlFor={universalCheckBoxId}>Universal</label>
+                  <label htmlFor={universalCheckBoxId} className="text-xs font-medium text-gray-600 cursor-pointer select-none grow">
+                    Universal
+                  </label>
                 </div>
-                <div className='flex cursor-pointer items-center gap-2 px-2 py-1'>
+                
+                <div className="flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 hover:bg-gray-50">
                   <Checkbox
                     id={interactionCheckBoxId}
                     checked={csvSelections.interaction}
                     onCheckedChange={() => handleCheckboxChange('interaction')}
+                    className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                   />
-                  <label htmlFor={interactionCheckBoxId}>Interaction</label>
+                  <label htmlFor={interactionCheckBoxId} className="text-xs font-medium text-gray-600 cursor-pointer select-none grow">
+                    Interaction
+                  </label>
                 </div>
+                
                 <Button
-                  size='sm'
-                  className='mt-2'
+                  size="sm"
+                  className="mt-1 h-8 rounded-lg bg-[#00796B] text-xs font-semibold text-white transition-colors hover:bg-[#00695C] disabled:bg-gray-100 disabled:text-gray-400"
                   onClick={handleCsvExport}
                   disabled={!csvSelections.universal && !csvSelections.interaction}
                 >
-                  Export
+                  Confirm Export
                 </Button>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -92,7 +108,7 @@ export function Export() {
             <DropdownMenuItem
               key={opt.label}
               onClick={() => eventEmitter.emit(Events.EXPORT, { format: opt.label, all: true })}
-              className='cursor-pointer'
+              className="cursor-pointer text-xs font-medium text-gray-700 rounded-md px-2 py-1.5 focus:bg-gray-50 focus:text-gray-900"
             >
               {opt.label.toUpperCase()}
             </DropdownMenuItem>
