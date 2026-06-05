@@ -1,4 +1,4 @@
-import { ChevronsUpDownIcon, InfoIcon, RefreshCcwIcon } from 'lucide-react';
+import { ChevronsUpDownIcon, HelpCircleIcon, RefreshCcwIcon } from 'lucide-react';
 import { type NodeColorType, nodeColor, PROPERTY_LABEL_TYPE_MAPPING } from '@/lib/data';
 import { useStore } from '@/lib/hooks';
 import { Button } from '../ui/button';
@@ -56,7 +56,7 @@ export function NodeColor({ onPropChange }: { onPropChange: (prop: string | Set<
                 <Label htmlFor={label} className='text-xs'>
                   {label}
                 </Label>
-                <TooltipTrigger asChild>{tooltipContent && <InfoIcon size={12} className='shrink-0' />}</TooltipTrigger>
+                <TooltipTrigger asChild>{tooltipContent && <HelpCircleIcon size={12} className='shrink-0' />}</TooltipTrigger>
               </div>
               {tooltipContent && (
                 <TooltipContent align='start'>

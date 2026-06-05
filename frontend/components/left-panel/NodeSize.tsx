@@ -1,4 +1,4 @@
-import { ChevronsUpDownIcon, InfoIcon, RefreshCcwIcon } from 'lucide-react';
+import { ChevronsUpDownIcon, HelpCircle, RefreshCcwIcon } from 'lucide-react';
 import { type NodeSizeType, nodeSize, PROPERTY_LABEL_TYPE_MAPPING } from '@/lib/data';
 import { useStore } from '@/lib/hooks';
 import { Button } from '../ui/button';
@@ -58,7 +58,7 @@ export function NodeSize({ onPropChange }: { onPropChange: (prop: string | Set<s
                     {label}
                   </Label>
                   <TooltipTrigger asChild>
-                    {tooltipContent && <InfoIcon size={12} className='shrink-0' />}
+                    {tooltipContent && <HelpCircle size={12} className='shrink-0' />}
                   </TooltipTrigger>
                 </div>
                 {tooltipContent && (

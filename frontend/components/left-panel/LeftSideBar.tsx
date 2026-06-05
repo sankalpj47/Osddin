@@ -1,8 +1,8 @@
 'use client';
 import { useLazyQuery } from '@apollo/client/react';
-import { SquareDashedMousePointerIcon } from 'lucide-react';
+import {  SquareDashedMousePointerIcon, Upload, ChevronDown, ChevronRight ,RotateCcw} from 'lucide-react';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DISEASE_DEPENDENT_PROPERTIES, type DiseaseDependentProperties } from '@/lib/data';
 import { GENE_PROPERTIES_QUERY, GET_HEADERS_QUERY } from '@/lib/gql';
@@ -27,10 +27,15 @@ import { GeneSearch, NodeColor, NodeSize } from '.';
 
 export function LeftSideBar() {
   const diseaseName = useStore(state => state.diseaseName);
+  const geneNames = useStore(state => state.geneNames); // Added to get active gene list count
   const geneIds = useStore(useShallow(state => state.geneNames.map(g => state.geneNameToID.get(g) ?? g)));
   const skipCommon = useRef<boolean>(false);
   const [diseaseData, setDiseaseData] = React.useState<GetDiseaseData | undefined>(undefined);
   const [diseaseMap, setDiseaseMap] = React.useState<string>('MONDO_0004976');
+
+  const [activePropertyTab, setActivePropertyTab] = useState<'color' | 'size'>('color');
+
+  const [isSeedGenesCollapsed, setIsSeedGenesCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     const graphConfig = localStorage.getItem('graphConfig');
@@ -61,7 +66,6 @@ export function LeftSideBar() {
     returnPartialData: true,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Fetchdata dependency is redundant
   useEffect(() => {
     if (!diseaseName) return;
     fetchHeader({
@@ -77,7 +81,6 @@ export function LeftSideBar() {
           database: {
             ...useStore.getState().radioOptions.database,
             DEG: [],
-            // OpenTargets: [],
           },
           user: useStore.getState().radioOptions.user,
         };
@@ -89,9 +92,6 @@ export function LeftSideBar() {
           radioOptions.database.TE = data.tissueSpecificity ?? [];
         }
         skipCommon.current = true;
-
-        // Currently all of it is same for OpenTargets
-        // radioOptions.database.OpenTargets = data.openTargets ?? [];
         radioOptions.database.DEG = data.differentialExpression ?? [];
         useStore.setState({ radioOptions });
       })
@@ -106,22 +106,8 @@ export function LeftSideBar() {
     for (const gene of geneIds) {
       if (universalData[gene] === undefined) {
         universalData[gene] = {
-          common: {
-            Custom_Color: {},
-            OT_Prioritization: {},
-            Druggability: {},
-            Pathway: {},
-            TE: {},
-          },
-          user: {
-            DEG: {},
-            OpenTargets: {},
-            Custom_Color: {},
-            Druggability: {},
-            Pathway: {},
-            TE: {},
-            OT_Prioritization: {},
-          },
+          common: { Custom_Color: {}, OT_Prioritization: {}, Druggability: {}, Pathway: {}, TE: {} },
+          user: { DEG: {}, OpenTargets: {}, Custom_Color: {}, Druggability: {}, Pathway: {}, TE: {}, OT_Prioritization: {} },
         };
       }
     }
@@ -179,10 +165,7 @@ export function LeftSideBar() {
           if (diseaseId) {
             if (category !== 'DEG' && category !== 'OpenTargets') continue;
             if (geneRecord[diseaseId] === undefined) {
-              geneRecord[diseaseId] = {
-                DEG: {},
-                OpenTargets: {},
-              } as OtherSection;
+              geneRecord[diseaseId] = { DEG: {}, OpenTargets: {} } as OtherSection;
             }
             (geneRecord[diseaseId] as OtherSection)[category][key] = score;
           } else {
@@ -204,67 +187,147 @@ export function LeftSideBar() {
   }
 
   return (
-    <ScrollArea className='flex h-[calc(96vh-1.5px)] flex-col border-r p-2'>
-      <Export />
-      <Tooltip>
-        <TooltipTrigger className='relative'>
-          <MouseControlMessage />
-          <SquareDashedMousePointerIcon className='size-4' />
-        </TooltipTrigger>
-        <TooltipContent align='start' className='max-w-96 text-sm'>
-          <ol>
-            <li>
-              • To select multiple genes and export details or perform GSEA analysis, use the mouse to select the genes
-              <br />
-              <b>
-                <i>Shortcut: </i>
-              </b>
-              <kbd className='rounded-md border px-1'> Shift(⇧) + Click</kbd> & Drag
-            </li>
-            <br />
-            <li>
-              • To highlight neighbors of a gene, either check Highlight Neighbor Genes on Network Style section and
-              then hover/click the gene
-              <br />
-              <b>
-                <i>Shortcut: </i>
-              </b>
-              <kbd className='rounded-md border px-1'>Cmd/Ctrl(⌘) + Hover</kbd>
-            </li>
-            <br />
-            <li>
-              • To highlight a gene via appending it to search textbox, click the gene while holding the Cmd/Ctrl(⌘) key
-              <br />
-              <b>
-                <i>Shortcut: </i>
-              </b>
-              <kbd className='rounded-md border px-1'>Cmd/Ctrl(⌘) + Click</kbd>
-            </li>
-          </ol>
-        </TooltipContent>
-      </Tooltip>
-      <div className='flex flex-col'>
-        <Label className='mb-2 font-bold'>Disease Map</Label>
-        <div className='flex w-full items-center'>
-          <div className='min-w-0 grow px-2'>
+    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-[#F8F9FA] p-4 text-gray-700 select-none">
+
+      {/* 1. Disease Select dropdown context */}
+      <div className="mb-4 flex flex-col">
+        <div className="flex w-full items-center justify-between relative">
+          <div className="min-w-0 grow">
             <DiseaseMapCombobox
               value={diseaseMap}
               onChange={d => typeof d === 'string' && handleDiseaseChange(d)}
               data={diseaseData}
-              className='w-full'
+              className="w-full bg-white border border-gray-200 rounded-lg text-sm"
             />
           </div>
           {(!called || (called && loading) || diseaseData === undefined || universalLoading) && (
-            <div className='fade-in zoom-in mr-1 animate-in duration-100'>
-              <Spinner size='small' />
+            <div className="fade-in zoom-in ml-2 animate-in duration-100">
+              <Spinner size="small" />
             </div>
           )}
         </div>
       </div>
-      <NodeColor onPropChange={val => handlePropChange(val, 'color')} />
-      <NodeSize onPropChange={val => handlePropChange(val, 'size')} />
-      <div className='mb-2 flex flex-col space-y-2'>
-        <GeneSearch />
+
+      {/* 2. Node Properties Container Block */}
+      <div className="mb-4 flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <Label className="mb-3 text-sm font-bold text-gray-800 tracking-tight">Node Properties</Label>
+
+        <div className="mb-4 flex rounded-lg bg-gray-100 p-1">
+          <button
+            type="button"
+            onClick={() => setActivePropertyTab('color')}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'color'
+                ? 'bg-white text-gray-900 shadow-xs'
+                : 'text-gray-500 hover:text-gray-900'
+              }`}
+          >
+            Color
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePropertyTab('size')}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'size'
+                ? 'bg-white text-gray-900 shadow-xs'
+                : 'text-gray-500 hover:text-gray-900'
+              }`}
+          >
+            Size
+          </button>
+        </div>
+
+        <div className="text-sm">
+          {activePropertyTab === 'color' ? (
+            <NodeColor onPropChange={val => handlePropChange(val, 'color')} />
+          ) : (
+            <NodeSize onPropChange={val => handlePropChange(val, 'size')} />
+          )}
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200">
+        <div
+          className="flex cursor-pointer items-center justify-between select-none"
+          onClick={() => setIsSeedGenesCollapsed(!isSeedGenesCollapsed)}
+        >
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-bold text-gray-800 tracking-tight cursor-pointer">
+              #Seed Genes
+            </Label>
+            {isSeedGenesCollapsed && (
+              <span className="rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-700 border border-teal-100">
+                {geneNames?.length || 0} loaded
+              </span>
+            )}
+          </div>
+          <div className="text-gray-400 hover:text-gray-600 p-0.5 rounded-md hover:bg-gray-50">
+            {isSeedGenesCollapsed ? <ChevronRight className="size-4" /> : <ChevronDown className="size-4" />}
+          </div>
+        </div>
+
+   
+        {!isSeedGenesCollapsed && (
+          <div className="mt-3 grid grid-cols-1 animate-in fade-in slide-in-from-top-2 duration-150">
+            <GeneSearch />
+          </div>
+        )}
+      </div>
+
+      <div className="mb-6 flex w-full items-center gap-3 px-1">
+
+        <div className="flex-1">
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-2xs transition-colors hover:bg-gray-50 active:bg-gray-100"
+              >
+                <SquareDashedMousePointerIcon className="size-3.5 text-gray-500" />
+                <span>Shortcuts</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent align="start" side="top" sideOffset={6} className="max-w-xs p-3 text-xs leading-relaxed shadow-md rounded-xl border border-gray-200 bg-white">
+              <ol className="space-y-2 text-gray-600">
+                <li className="flex items-start gap-1">
+                  <span className="text-teal-600 font-bold">•</span>
+                  <span><b>Shift (⇧) + Drag</b>: Select multiple genes.</span>
+                </li>
+                <li className="flex items-start gap-1">
+                  <span className="text-teal-600 font-bold">•</span>
+                  <span><b>Cmd/Ctrl (⌘) + Hover</b>: Highlight neighbor genes.</span>
+                </li>
+                <li className="flex items-start gap-1">
+                  <span className="text-teal-600 font-bold">•</span>
+                  <span><b>Cmd/Ctrl (⌘) + Click</b>: Append gene to search.</span>
+                </li>
+              </ol>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <div className="flex-1">
+          
+          <Export />
+        </div>
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 gap-3 pt-2">
+        <button
+          type="button"
+          className="flex items-center justify-center gap-2 rounded-lg bg-[#00796B] px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#00695C]"
+        >
+          <Upload className="size-3.5" />
+          Upload Files
+        </button>
+        <button
+          type="button"
+          className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+        >
+          <RotateCcw className="size-3.5" />
+          Reset
+        </button>
+      </div>
+
+      <div className="hidden">
         <FileSheet />
       </div>
     </ScrollArea>

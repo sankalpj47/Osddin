@@ -12,6 +12,8 @@ import Link from 'next/link';
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ChatBase } from './ChatBase';
+import {NetworkInfo} from "../right-panel/NetworkInfo"
+import {Legend} from "../right-panel/Legend"
 
 export function ChatWindow() {
   const [isChatOpen, setIsChatOpen] = React.useState(false);
@@ -50,10 +52,18 @@ export function ChatWindow() {
     <ChatBase onChatOpen={setIsChatOpen}>
       {({ messages, handleDeleteMessages, renderMessages, renderPromptInput }) => (
         <div className='relative mx-auto flex w-full flex-col items-center'>
+          
+          {!isChatOpen && (
+            <div className="absolute bottom-full left-3 mb-3 z-10 flex flex-col gap-2.5 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <NetworkInfo />
+              <Legend/>
+            </div>
+          )}
+
           {isChatOpen && (
             <div
               style={{ height: chatHeight ?? '70vh', maxHeight: 'calc(100vh - 200px)' }}
-              className='fade-in slide-in-from-bottom-5 absolute bottom-full mb-2 flex w-[98%] animate-in flex-col overflow-hidden rounded-lg shadow-lg backdrop-blur-sm transition-opacity duration-200'
+              className='fade-in slide-in-from-bottom-5 absolute bottom-full mb-2 flex w-[98%] animate-in flex-col overflow-hidden rounded-lg shadow-lg border border-gray-200 bg-white/95 backdrop-blur-sm transition-opacity duration-200 z-20'
             >
               <div
                 onPointerDown={handlePointerDown}
@@ -125,7 +135,8 @@ export function ChatWindow() {
               </div>
             </div>
           )}
-          <div className='flex w-full items-end'>
+          
+          <div className='flex w-full items-end z-30'>
             <div className='relative flex flex-1'>{renderPromptInput()}</div>
             {!isChatOpen && messages.length > 0 && (
               <button
