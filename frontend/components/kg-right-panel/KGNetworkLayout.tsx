@@ -79,7 +79,7 @@ export function KGNetworkLayout() {
                   <TooltipTrigger asChild>
                     <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-teal-600' />
                   </TooltipTrigger>
-                  <TooltipContent className='max-w-60 border-gray-200 bg-white text-gray-700 shadow-sm' align='end'>
+                  <TooltipContent className='max-w-60' align='end'>
                     {option.tooltip}
                   </TooltipContent>
                 </Tooltip>
