@@ -97,7 +97,6 @@ export interface KGChatRenderProps {
   renderPromptInput: () => React.ReactNode;
 }
 
-
 export function KGChat({ onChatOpen, children }: KGChatProps) {
   const [model, setModel] = React.useState<(typeof LLM_MODELS)[number]['id']>(LLM_MODELS[0].id);
   const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
@@ -162,7 +161,6 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
             throw new Error(`Tool '${toolCall.toolName}' not found in registry`);
           }
 
-   
           const result = await toolFn(toolCall.input as any, toolContext);
 
           // Check if tool execution was successful
@@ -422,7 +420,7 @@ export function KGChat({ onChatOpen, children }: KGChatProps) {
                       {textParts.length > 0 && (
                         <React.Fragment>
                           <Message from={message.role}>
-                            <MessageContent className='shadow-md'>
+                            <MessageContent className='!bg-transparent !text-gray-900 shadow-none'>
                               <MessageResponse isAnimating={status === 'submitted' && message.role === 'assistant'}>
                                 {textParts.map(p => p.text).join('\n')}
                               </MessageResponse>
