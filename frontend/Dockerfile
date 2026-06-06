@@ -29,6 +29,7 @@ COPY --from=builder /app/out/_pagefind /usr/share/nginx/html/_pagefind
 COPY --from=builder /app/out/*.txt /usr/share/nginx/html/
 COPY --from=builder /app/out/*.html /usr/share/nginx/html/
 COPY --from=builder /app/out/*.xml /usr/share/nginx/html/
+COPY --from=builder /app/out/examples /usr/share/nginx/html/examples
 
 EXPOSE 80
 

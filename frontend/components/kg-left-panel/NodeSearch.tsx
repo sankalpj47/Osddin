@@ -44,7 +44,6 @@ export function NodeSearch() {
 
     const computedStyle = window.getComputedStyle(textarea);
 
-    // Create reusable span once
     if (!measureSpanRef.current) {
       const span = document.createElement('span');
       span.style.visibility = 'hidden';
@@ -61,7 +60,6 @@ export function NodeSearch() {
     }
     const span = measureSpanRef.current;
 
-    // Calculate position
     const lineHeight = Number.parseFloat(computedStyle.lineHeight);
     const paddingTop = Number.parseFloat(computedStyle.paddingTop);
     const paddingLeft = Number.parseFloat(computedStyle.paddingLeft);
@@ -70,7 +68,6 @@ export function NodeSearch() {
     const lines = textBeforeCursor.split('\n');
     const currentLine = lines.length - 1;
 
-    // Measure text width
     span.textContent = lines[lines.length - 1];
     const textWidth = span.getBoundingClientRect().width;
 
@@ -90,7 +87,6 @@ export function NodeSearch() {
     if (!sigmaInstance) return;
     const graph = sigmaInstance.getGraph();
 
-    // biome-ignore lint/suspicious/noExplicitAny: No need
     const content = graph.reduceNodes<any>((acc, node, attr) => {
       if (attr.highlighted) {
         acc.push({
@@ -104,40 +100,48 @@ export function NodeSearch() {
   };
 
   return (
-    <div>
-      <div className='my-1 flex justify-between'>
-        <span className='font-medium text-sm'>Search Nodes</span>
+    <div className="w-full min-w-0">
+      <div className="mb-1.5 flex items-center justify-between w-full min-w-0">
+        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider truncate">
+          Search Nodes
+        </span>
         <button
-          type='button'
-          className='inline-flex cursor-pointer text-xs text-zinc-500 underline disabled:cursor-not-allowed disabled:opacity-50'
+          type="button"
+          className="inline-flex items-center gap-1 cursor-pointer text-xs font-medium text-teal-600 hover:text-teal-700 hover:underline disabled:cursor-not-allowed disabled:text-zinc-400 disabled:no-underline shrink-0 transition-colors"
           disabled={nodeSearchQuery.length === 0}
           onClick={handleExport}
         >
-          Export <SquareArrowOutUpRightIcon size={10} className='mt-1 ml-0.5' />
+          Export
+          <SquareArrowOutUpRightIcon size={11} className="text-current" />
         </button>
       </div>
-      <div className='relative w-full'>
+
+      <div className="relative w-full min-w-0">
         <Textarea
           ref={textareaRef}
-          placeholder='Search Nodes...'
-          className='min-h-20 bg-white text-xs'
+          placeholder="Search Nodes..."
+          className="min-h-20 w-full bg-white text-xs border-gray-200 rounded-lg placeholder:text-gray-400 focus-visible:ring-teal-600 resize-none"
           value={nodeSearchQuery}
           onChange={e => handleQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onClick={updateCursorPosition}
         />
+        
         {nodeSuggestions.length > 0 && (
           <ul
-            className='absolute z-50 max-h-32 w-48 overflow-auto rounded-md border border-gray-300 bg-white text-xs shadow-lg'
+            className="absolute left-0 z-50 max-h-36 w-full overflow-y-auto rounded-lg border border-gray-100 bg-white p-1 text-xs shadow-xl"
             style={{
-              top: `${cursorPosition.top + 20}px`,
-              left: `${cursorPosition.left}px`,
+              top: `${cursorPosition.top + 24}px`,
             }}
           >
             {nodeSuggestions.map((suggestion, index) => (
               <li
                 key={suggestion}
-                className={`cursor-pointer px-2 py-1 hover:bg-gray-100 ${index === selectedIndex ? 'bg-gray-100' : ''}`}
+                className={`cursor-pointer rounded-md px-2 py-1.5 transition-colors truncate ${
+                  index === selectedIndex 
+                    ? 'bg-teal-50 text-teal-900 font-medium' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
                 onClick={() => appendSuggestion(suggestion)}
                 onKeyDown={() => {}}
               >

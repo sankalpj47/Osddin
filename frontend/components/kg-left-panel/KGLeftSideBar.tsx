@@ -3,7 +3,7 @@
 import { useLazyQuery } from '@apollo/client/react';
 import type EventEmitter from 'events';
 import { DownloadIcon, SquareDashedMousePointerIcon } from 'lucide-react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DISEASE_DEPENDENT_PROPERTIES,
   type DiseaseDependentProperties,
@@ -28,11 +28,9 @@ import { NodeColor } from '../left-panel/NodeColor';
 import { NodeSize } from '../left-panel/NodeSize';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { ScrollArea } from '../ui/scroll-area';
 import { Spinner } from '../ui/spinner';
-import { Textarea } from '../ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { KGFileSheet } from './KGFileSheet';
 import { NodeColorSelector } from './NodeColorSelector';
@@ -60,6 +58,7 @@ export function KGLeftSideBar() {
   const [toolName, setToolName] = React.useState<string>('');
   const [toolInput, setToolInput] = React.useState<string>('{}');
   const [toolTesting, setToolTesting] = React.useState<boolean>(false);
+  const [activePropertyTab, setActivePropertyTab] = useState<'color' | 'size'>('color');
 
   const [fetchHeader, { loading: headerLoading, called }] = useLazyQuery<GetHeadersData, GetHeadersVariables>(
     GET_HEADERS_QUERY,
@@ -380,22 +379,29 @@ export function KGLeftSideBar() {
 
       {/* Disease selector for Gene nodes */}
       {hasGeneNodes && (
-        <div className='flex flex-col'>
-          <Label className='mb-2 font-bold'>Disease Map</Label>
-          <div className='flex w-full items-center'>
-            <div className='min-w-0 grow px-2'>
-              <DiseaseMapCombobox
-                value={diseaseMap}
-                onChange={d => typeof d === 'string' && handleDiseaseChange(d)}
-                data={diseaseData}
-                className='w-full'
-              />
-            </div>
+        <div className="flex flex-col space-y-2.5 w-full">
+          {/* Header layout row containing label and spinner aligned cleanly */}
+          <div className="flex items-center justify-between w-full min-w-0">
+            <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider truncate">
+              Disease Map
+            </Label>
+
+            {/* Dynamic Loading Spinner alignment */}
             {(!called || (called && headerLoading) || diseaseData === undefined || universalLoading) && (
-              <div className='fade-in zoom-in mr-1 animate-in duration-100'>
-                <Spinner size='small' />
+              <div className="fade-in zoom-in animate-in duration-100 shrink-0 ml-2">
+                <Spinner size="small" className="text-teal-600" />
               </div>
             )}
+          </div>
+
+          {/* Dropdown element container */}
+          <div className="w-full min-w-0 mb-4">
+            <DiseaseMapCombobox
+              value={diseaseMap}
+              onChange={d => typeof d === 'string' && handleDiseaseChange(d)}
+              data={diseaseData}
+              className="w-full bg-white border-gray-200 rounded-lg text-xs"
+            />
           </div>
         </div>
       )}
@@ -410,16 +416,78 @@ export function KGLeftSideBar() {
 
       {/* Conditional rendering based on whether graph has Gene nodes */}
       {hasGeneNodes ? (
-        <>
-          {/* Gene node controls - use NodeColor/NodeSize from left-panel */}
-          <NodeColor onPropChange={val => handlePropChange(val, 'color')} />
-          <NodeSize onPropChange={val => handlePropChange(val, 'size')} />
-        </>
+        <div className="mb-4 flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <Label className="mb-3 text-sm font-bold text-gray-800 tracking-tight">Node Properties</Label>
+
+          <div className="mb-4 flex rounded-lg bg-gray-100 p-1">
+            <button
+              type="button"
+              onClick={() => setActivePropertyTab('color')}
+              className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'color'
+                ? 'bg-white text-gray-900 shadow-xs'
+                : 'text-gray-500 hover:text-gray-900'
+                }`}
+            >
+              Color
+            </button>
+            <button
+              type="button"
+              onClick={() => setActivePropertyTab('size')}
+              className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'size'
+                ? 'bg-white text-gray-900 shadow-xs'
+                : 'text-gray-500 hover:text-gray-900'
+                }`}
+            >
+              Size
+            </button>
+          </div>
+
+          <div className="text-sm">
+            {activePropertyTab === 'color' ? (
+              <NodeColor onPropChange={val => handlePropChange(val, 'color')} />
+            ) : (
+              <NodeSize onPropChange={val => handlePropChange(val, 'size')} />
+            )}
+          </div>
+        </div>
       ) : (
         <>
-          {/* Non-Gene node controls - use NodeColorSelector/NodeSizeSelector */}
-          <NodeColorSelector onPropChangeAction={val => handleKGPropChange(val, 'color')} />
-          <NodeSizeSelector onPropChangeAction={val => handleKGPropChange(val, 'size')} />
+          <div className="mb-4 flex flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <Label className="mb-3 text-sm font-bold text-gray-800 tracking-tight">Node Properties</Label>
+
+            <div className="mb-4 flex rounded-lg bg-gray-100 p-1">
+              <button
+                type="button"
+                onClick={() => setActivePropertyTab('color')}
+                className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'color'
+                  ? 'bg-white text-gray-900 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+                  }`}
+              >
+                Color
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePropertyTab('size')}
+                className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-all ${activePropertyTab === 'size'
+                  ? 'bg-white text-gray-900 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+                  }`}
+              >
+                Size
+              </button>
+            </div>
+
+            <div className="text-sm">
+              {activePropertyTab === 'color' ? (
+                <NodeColorSelector onPropChangeAction={val => handleKGPropChange(val, 'color')} />
+              ) : (
+                <NodeSizeSelector onPropChangeAction={val => handleKGPropChange(val, 'size')} />
+              )}
+            </div>
+          </div>
+
+
         </>
       )}
 
@@ -429,45 +497,6 @@ export function KGLeftSideBar() {
         <KGFileSheet />
       </div>
 
-      {/* Tool Testing Section (Temporary) */}
-      <div className='mt-4 rounded border border-yellow-500 bg-yellow-50 p-3'>
-        <Label className='mb-2 font-bold text-yellow-800'>🧪 Tool Testing</Label>
-        <div className='flex flex-col space-y-2'>
-          <div>
-            <Label className='text-xs'>Tool Name</Label>
-            <Input
-              placeholder='e.g., searchNodes'
-              value={toolName}
-              onChange={e => setToolName(e.target.value)}
-              className='text-xs'
-            />
-          </div>
-          <div>
-            <Label className='text-xs'>Input (JSON)</Label>
-            <Textarea
-              placeholder='{"query": "BRCA1", "limit": 5}'
-              value={toolInput}
-              onChange={e => setToolInput(e.target.value)}
-              className='font-mono text-xs'
-              rows={4}
-            />
-          </div>
-          <Button
-            onClick={handleToolTest}
-            disabled={!sigmaInstance || !toolName || toolTesting}
-            size='sm'
-            variant='outline'
-          >
-            {toolTesting ? <Spinner size='small' /> : 'Test Tool'}
-          </Button>
-          <details className='text-xs'>
-            <summary className='cursor-pointer text-yellow-700'>Available Tools</summary>
-            <div className='mt-1 max-h-32 overflow-y-auto rounded bg-white p-2 font-mono text-[10px]'>
-              {Object.keys(KG_TOOLS).join(', ')}
-            </div>
-          </details>
-        </div>
-      </div>
     </ScrollArea>
   );
 }
