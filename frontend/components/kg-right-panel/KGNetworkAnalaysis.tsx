@@ -2,7 +2,7 @@
 
 import { Label } from '@radix-ui/react-label';
 import type EventEmitter from 'events';
-import { ChevronsUpDownIcon, DownloadIcon } from 'lucide-react';
+import { ChevronsUpDownIcon, DownloadIcon, Settings2Icon } from 'lucide-react';
 import Papa from 'papaparse';
 import { useEffect, useId, useState } from 'react';
 import { algorithms, columnLeidenResults } from '@/lib/data';
@@ -207,157 +207,216 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Collapsible defaultOpen className='mb-2 rounded border p-2 text-xs shadow-sm'>
+    <Collapsible defaultOpen className='mb-2 rounded-xl border border-gray-200 bg-white p-2 text-xs shadow-sm'>
       <div className='flex w-full items-center justify-between'>
-        <p className='font-bold'>Network Analysis</p>
+        <p className='font-bold text-gray-800'>Network Analysis</p>
         <CollapsibleTrigger asChild>
-          <Button type='button' variant='outline' size='icon' className='size-6'>
+          <Button
+            type='button'
+            variant='outline'
+            size='icon'
+            className='size-6 border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+          >
             <ChevronsUpDownIcon size={15} />
           </Button>
         </CollapsibleTrigger>
       </div>
-      <CollapsibleContent className='mt-1'>
-        <RadioGroup defaultValue='None' className='mb-2'>
-          {algorithms.map(({ name, parameters }) => (
-            <Popover key={name}>
-              <div className='flex items-center space-x-2'>
-                <PopoverTrigger asChild>
-                  <RadioGroupItem value={name} id={name} onClick={() => name === 'None' && handleAlgoQuery(name)} />
-                </PopoverTrigger>
-                <Label htmlFor={name} className='text-xs'>
-                  {name}
-                </Label>
-              </div>
-              {parameters.length > 0 && (
-                <PopoverContent className='w-52'>
-                  <form
-                    key={name}
-                    className='flex flex-col space-y-2'
-                    onSubmit={e => {
-                      e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-                      // Merge form data with select state
-                      const params = Object.fromEntries(formData.entries());
-                      const mergedParams: Record<string, string> = {};
-                      for (const [key, value] of Object.entries({ ...formState, ...params })) {
-                        mergedParams[key] = typeof value === 'string' ? value : String(value);
-                      }
-                      handleAlgoQuery(name, mergedParams);
-                    }}
-                  >
-                    {parameters.map(param => {
-                      if (param.type === 'slider') {
-                        return (
-                          <div key={param.name}>
-                            <Label htmlFor={param.name} className='font-semibold text-xs'>
-                              {param.displayName}
-                            </Label>
-                            <SliderWithInput
-                              min={param.min}
-                              max={param.max}
-                              step={param.step}
-                              id={param.name}
-                              defaultValue={param.defaultValue as number}
-                            />
-                          </div>
-                        );
-                      }
-                      if (param.type === 'select') {
-                        return (
-                          <div key={param.name}>
-                            <Label htmlFor={param.name} className='font-semibold text-xs'>
-                              {param.displayName}
-                            </Label>
-                            <VirtualizedCombobox
-                              data={nodeOptions}
-                              value={formState[param.name] || ''}
-                              onChange={value => {
-                                if (typeof value === 'string') {
-                                  setFormState(prev => ({ ...prev, [param.name]: value }));
-                                }
-                              }}
-                              placeholder={param.placeholder}
-                              className='w-full text-xs'
-                              width='700px'
-                            />
-                          </div>
-                        );
-                      }
-                      return (
-                        <div key={param.name} className='flex w-full items-center gap-2'>
-                          <Label htmlFor={param.name} className='font-semibold text-xs'>
-                            {param.displayName}
-                          </Label>
-                          <Checkbox name={param.name} id={param.name} defaultChecked={param.defaultValue as boolean} />
-                        </div>
-                      );
-                    })}
-                    <Button
-                      type='submit'
-                      size={'sm'}
-                      className=''
-                      disabled={
-                        // Disable for DWPC and Path Finding if source or target not selected
-                        (name === 'DWPC' || name === 'Path Finding') && (!formState.source || !formState.target)
-                      }
+
+      <CollapsibleContent className='mt-2'>
+        <Tabs defaultValue='type' className='w-full'>
+          <TabsList className='mb-3 grid h-8 w-full grid-cols-2 rounded-lg bg-gray-100 p-0.5'>
+            <TabsTrigger
+              value='type'
+              className='rounded-md py-1 font-medium text-gray-500 text-xs transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-xs'
+            >
+              Type
+            </TabsTrigger>
+            <TabsTrigger
+              value='settings'
+              className='rounded-md py-1 font-medium text-gray-500 text-xs transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-xs'
+            >
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='type' className='mt-0 space-y-1.5 focus-visible:outline-none focus-visible:ring-0'>
+            <RadioGroup defaultValue='None' className='space-y-1.5'>
+              {algorithms.map(({ name, parameters }) => (
+                <div
+                  key={name}
+                  className='group flex items-center justify-between rounded-lg p-1 transition-colors hover:bg-gray-50'
+                >
+                  <div className='flex items-center space-x-2'>
+                    <RadioGroupItem value={name} id={name} onClick={() => name === 'None' && handleAlgoQuery(name)} />
+                    <Label
+                      htmlFor={name}
+                      className='cursor-pointer font-medium text-gray-500 text-xs transition-colors group-has-:checked:text-gray-900'
                     >
-                      Apply
-                    </Button>
-                  </form>
-                </PopoverContent>
-              )}
-            </Popover>
-          ))}
-        </RadioGroup>
+                      {name}
+                    </Label>
+                  </div>
+
+                  {parameters.length > 0 && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                        >
+                          <Settings2Icon className='size-3.5' />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className='w-52 border-gray-200 bg-white p-3 shadow-sm'
+                        side='right'
+                        align='center'
+                        sideOffset={10}
+                      >
+                        <form
+                          key={name}
+                          className='flex flex-col space-y-2'
+                          onSubmit={e => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const params = Object.fromEntries(formData.entries());
+                            const mergedParams: Record<string, string> = {};
+                            for (const [key, value] of Object.entries({ ...formState, ...params })) {
+                              mergedParams[key] = typeof value === 'string' ? value : String(value);
+                            }
+                            handleAlgoQuery(name, mergedParams);
+                          }}
+                        >
+                          <div className='mb-1 border-gray-100 border-b pb-1 font-semibold text-[11px] text-gray-500 uppercase tracking-wide'>
+                            {name} Options
+                          </div>
+                          {parameters.map(param => {
+                            if (param.type === 'slider') {
+                              return (
+                                <div key={param.name} className='space-y-1'>
+                                  <SliderWithInput
+                                    min={param.min}
+                                    max={param.max}
+                                    step={param.step}
+                                    id={param.name}
+                                    label={param.displayName}
+                                    defaultValue={param.defaultValue as number}
+                                  />
+                                </div>
+                              );
+                            }
+                            if (param.type === 'select') {
+                              return (
+                                <div key={param.name} className='space-y-1'>
+                                  <Label htmlFor={param.name} className='font-semibold text-gray-700 text-xs'>
+                                    {param.displayName}
+                                  </Label>
+                                  <VirtualizedCombobox
+                                    data={nodeOptions}
+                                    value={formState[param.name] || ''}
+                                    onChange={value => {
+                                      if (typeof value === 'string') {
+                                        setFormState(prev => ({ ...prev, [param.name]: value }));
+                                      }
+                                    }}
+                                    placeholder={param.placeholder}
+                                    className='w-full text-xs'
+                                    width='700px'
+                                  />
+                                </div>
+                              );
+                            }
+                            return (
+                              <div key={param.name} className='flex w-full items-center gap-2 py-0.5'>
+                                <Checkbox
+                                  name={param.name}
+                                  id={param.name}
+                                  defaultChecked={param.defaultValue as boolean}
+                                />
+                                <Label
+                                  htmlFor={param.name}
+                                  className='cursor-pointer font-semibold text-gray-700 text-xs'
+                                >
+                                  {param.displayName}
+                                </Label>
+                              </div>
+                            );
+                          })}
+                          <Button
+                            type='submit'
+                            size={'sm'}
+                            className='mt-1 h-8 w-full bg-teal-600 text-white text-xs hover:bg-teal-700'
+                            disabled={
+                              (name === 'DWPC' || name === 'Path Finding') && (!formState.source || !formState.target)
+                            }
+                          >
+                            Apply
+                          </Button>
+                        </form>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+              ))}
+            </RadioGroup>
+          </TabsContent>
+
+          <TabsContent value='settings' className='mt-0 space-y-3 focus-visible:outline-none focus-visible:ring-0'>
+            <div className='flex flex-col gap-3 px-0.5 py-1'>{children}</div>
+          </TabsContent>
+        </Tabs>
+
         {algorithmResults && (
           <>
-            <hr className='mb-1' />
+            <hr className='my-2 border-gray-100' />
             <div className='flex items-center justify-between'>
-              <p className='font-semibold text-sm underline'>Results:</p>
+              <p className='font-semibold text-gray-800 text-xs underline'>Results:</p>
               {(algorithmResults.paths || algorithmResults.communities) && (
-                <div className='flex items-center gap-1'>
+                <div className='flex items-center gap-1.5'>
                   <Checkbox
                     id={focusedViewId}
                     checked={focusedView}
                     onCheckedChange={checked => setFocusedView(checked === true)}
                   />
-                  <Label htmlFor={focusedViewId} className='cursor-pointer text-xs'>
+                  <Label htmlFor={focusedViewId} className='cursor-pointer font-medium text-gray-500 text-xs'>
                     Focused View
                   </Label>
                 </div>
               )}
             </div>
-            {algorithmResults.modularity !== undefined && (
-              <p>
-                <b>Modularity:</b> {algorithmResults.modularity}
-              </p>
-            )}
-            {algorithmResults.resolution !== undefined && (
-              <p>
-                <b>Resolution:</b> {algorithmResults.resolution}
-              </p>
-            )}
-            {algorithmResults.dwpcScore !== undefined && (
-              <p>
-                <b>DWPC Score:</b> {algorithmResults.dwpcScore.toFixed(4)}
-              </p>
-            )}
+            <div className='mt-1 space-y-1 text-gray-500'>
+              {algorithmResults.modularity !== undefined && (
+                <p>
+                  <b>Modularity:</b> {algorithmResults.modularity}
+                </p>
+              )}
+              {algorithmResults.resolution !== undefined && (
+                <p>
+                  <b>Resolution:</b> {algorithmResults.resolution}
+                </p>
+              )}
+              {algorithmResults.dwpcScore !== undefined && (
+                <p>
+                  <b>DWPC Score:</b> {algorithmResults.dwpcScore.toFixed(4)}
+                </p>
+              )}
+            </div>
             {algorithmResults.allMetapaths !== undefined && algorithmResults.allMetapaths.length > 0 && (
-              <div>
+              <div className='mt-1 text-gray-500'>
                 <b>Metapaths:</b>
                 {algorithmResults.allMetapaths.map(mp => (
-                  // write each metapath in a separate line as a bullet list
-                  <p key={mp.join(';')} className='ml-2'>
+                  <p key={mp.join(';')} className='ml-2 text-[11px]'>
                     • {mp.join(' → ')}
                   </p>
                 ))}
               </div>
             )}
             {algorithmResults.paths && algorithmResults.paths.length > 0 && (
-              <div className='my-1 flex justify-center'>
+              <div className='my-2 flex justify-center'>
                 <Button
                   size='sm'
                   variant='outline'
+                  className='h-7 px-2.5 text-xs'
                   onClick={() => {
                     setShowPathsTable(true);
                     setPathFilter('');
@@ -366,7 +425,7 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
                   Show Details ({algorithmResults.paths.length})
                 </Button>
                 <Dialog open={showPathsTable}>
-                  <DialogContent className='flex max-h-[92vh] min-h-[60vh] max-w-7xl flex-col gap-2'>
+                  <DialogContent className='flex max-h-[92vh] min-h-[60vh] max-w-7xl flex-col gap-2 border-gray-200 bg-white'>
                     <DialogTitle>Path Analysis Results</DialogTitle>
                     <DialogDescription>
                       {algorithmResults.dwpcScore !== undefined
@@ -374,12 +433,10 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
                         : 'Shortest paths between source and target nodes'}
                     </DialogDescription>
                     {(() => {
-                      // Group paths by metapath and sort by weight descending
                       const groupMap = new Map<string, GroupedRow>();
                       const sigmaInstance = useKGStore.getState().sigmaInstance;
                       const graph = sigmaInstance?.getGraph();
 
-                      // Generate type color map
                       const { generateTypeColorMap } = require('@/lib/graph/knowledge-graph-renderer');
                       const typeColorMap = graph ? generateTypeColorMap(graph) : new Map<string, string>();
 
@@ -435,12 +492,12 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
               </div>
             )}
             {algorithmResults.communities && (
-              <div className='my-1 flex justify-center'>
-                <Button size='sm' variant='outline' onClick={() => setShowTable(true)}>
+              <div className='my-2 flex justify-center'>
+                <Button size='sm' variant='outline' className='h-7 px-2.5 text-xs' onClick={() => setShowTable(true)}>
                   Show Details ({algorithmResults.communities.length})
                 </Button>
                 <Dialog open={showTable}>
-                  <DialogContent className='flex max-h-[92vh] min-h-[60vh] max-w-7xl flex-col gap-2'>
+                  <DialogContent className='flex max-h-[92vh] min-h-[60vh] max-w-7xl flex-col gap-2 border-gray-200 bg-white'>
                     <DialogTitle>Leiden Communities</DialogTitle>
                     <DialogDescription>View the identified communities and their characteristics.</DialogDescription>
                     <Tabs defaultValue='table' className='w-full'>
@@ -503,8 +560,6 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
             )}
           </>
         )}
-        <hr className='mb-1' />
-        {children}
       </CollapsibleContent>
     </Collapsible>
   );

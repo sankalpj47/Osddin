@@ -34,7 +34,7 @@ import { formatBytes, openDB } from '@/lib/utils';
 
 /**
  * KGFileSheet - Upload property files for knowledge graph nodes
- * Supports CSV files where first column is node ID matching graph nodes
+ * Fully dynamic flex layout boundaries to prevent panel drag clipping
  */
 export function KGFileSheet() {
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
@@ -176,7 +176,6 @@ export function KGFileSheet() {
           return;
         }
 
-        // Detect target node type by checking uploaded IDs
         const uploadedNodeIds = parsedData.data.map(row => row[IDHeaderName]).filter(id => graph.hasNode(id));
         if (uploadedNodeIds.length === 0) {
           toast.error(`No matching nodes found in file: ${file.name}`, {
@@ -186,7 +185,6 @@ export function KGFileSheet() {
           return;
         }
 
-        // Determine target node type from first matching node
         const firstNodeId = uploadedNodeIds[0];
         const targetNodeType = graph.getNodeAttribute(firstNodeId, 'nodeType') || 'Unknown';
         const isGeneNode = targetNodeType === 'Gene';
@@ -196,12 +194,10 @@ export function KGFileSheet() {
         const kgPropertyOptions = useKGStore.getState().kgPropertyOptions;
 
         try {
-          // Process each property column
           for (const propertyName of parsedData.meta.fields ?? []) {
             if (propertyName === IDHeaderName) continue;
 
             if (isGeneNode) {
-              // Store Gene properties in universalData with user/diseaseId structure
               for (const row of parsedData.data) {
                 const nodeId = row[IDHeaderName];
                 if (!graph.hasNode(nodeId)) continue;
@@ -230,23 +226,18 @@ export function KGFileSheet() {
                   universalData[nodeId].user.Custom_Color = {};
                 }
 
-                // Try to parse as number, fallback to string
                 const value = row[propertyName];
                 const numValue = Number.parseFloat(value);
                 (universalData[nodeId].user.Custom_Color as Record<string, number | string>)[propertyName] =
                   Number.isNaN(numValue) ? value : numValue;
               }
 
-              // Add to radioOptions.user.Custom_Color if not already present
               if (!radioOptions.user.Custom_Color.includes(propertyName)) {
                 radioOptions.user.Custom_Color.push(propertyName);
               }
             } else {
-              // Non-Gene nodes: store in nodePropertyData with kgPropertyOptions metadata
-              // Check for property name conflicts and resolve
               let finalPropertyName = propertyName;
               if (kgPropertyOptions[propertyName]) {
-                // Conflict exists - append _file suffix
                 finalPropertyName = `${propertyName}_file`;
                 let counter = 1;
                 while (kgPropertyOptions[finalPropertyName]) {
@@ -259,13 +250,11 @@ export function KGFileSheet() {
                 });
               }
 
-              // Store property metadata in kgPropertyOptions
               kgPropertyOptions[finalPropertyName] = {
                 targetNodeType,
                 source: 'file',
               };
 
-              // Store property data for matching nodes
               for (const row of parsedData.data) {
                 const nodeId = row[IDHeaderName];
                 if (!graph.hasNode(nodeId)) continue;
@@ -274,7 +263,6 @@ export function KGFileSheet() {
                   nodePropertyData[nodeId] = {};
                 }
 
-                // Try to parse as number, fallback to string
                 const value = row[propertyName];
                 const numValue = Number.parseFloat(value);
                 nodePropertyData[nodeId][finalPropertyName] = Number.isNaN(numValue) ? value : numValue;
@@ -313,26 +301,22 @@ export function KGFileSheet() {
       return updatedCheckedOptions;
     });
 
-    // Remove only file-sourced properties
     const kgPropertyOptions = useKGStore.getState().kgPropertyOptions;
     const nodePropertyData = useKGStore.getState().nodePropertyData;
     const universalData = useStore.getState().universalData;
     const radioOptions = useStore.getState().radioOptions;
 
-    // Clear file properties from kgPropertyOptions (non-Gene nodes)
     const kgFileProperties = Object.keys(kgPropertyOptions).filter(prop => kgPropertyOptions[prop].source === 'file');
     for (const prop of kgFileProperties) {
       delete kgPropertyOptions[prop];
     }
 
-    // Clear file property data from non-Gene nodes
     for (const nodeId in nodePropertyData) {
       for (const prop of kgFileProperties) {
         delete nodePropertyData[nodeId][prop];
       }
     }
 
-    // Clear file properties from Gene nodes (Custom_Color)
     radioOptions.user.Custom_Color = [];
     for (const nodeId in universalData) {
       if (universalData[nodeId].user?.Custom_Color) {
@@ -351,85 +335,92 @@ export function KGFileSheet() {
   const doNotShowAgainId = useId();
 
   return (
-    <div>
-      <div className='flex flex-col justify-between gap-2 lg:flex-row'>
+    <div className="w-full min-w-0">
+      <div className="flex w-full items-center gap-2 min-w-0">
         <Sheet>
           <SheetTrigger asChild>
-            <Button size='sm' className='w-[48%] text-xs'>
-              <UploadIcon className='size-3' />
-              Upload Files
+            <Button 
+              size="sm" 
+              className="flex-1 min-w-0 gap-1.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors h-9 shadow-none"
+            >
+              <UploadIcon className="size-3.5 shrink-0" />
+              <span className="truncate">Upload Files</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side='bottom'>
+          <SheetContent side="bottom" className="max-h-[85vh]">
             <SheetHeader>
               <SheetTitle>Node Property Files</SheetTitle>
               <SheetDescription>
                 Upload CSV files with node properties. First column must be node ID matching your graph nodes.
               </SheetDescription>
             </SheetHeader>
-            <div className='py-4'>
+            <div className="py-4">
               <div
-                className='mb-4 cursor-pointer rounded-lg border-2 border-gray-300 border-dashed p-4 text-center'
+                className="mb-4 cursor-pointer rounded-lg border-2 border-gray-300 border-dashed p-4 text-center hover:bg-gray-50 transition-colors"
                 {...getRootProps()}
               >
                 <input {...getInputProps()} />
                 {isDragActive ? (
-                  <p>Drop the files here ...</p>
+                  <p className="text-xs text-gray-600">Drop the files here ...</p>
                 ) : (
-                  <p>Drag and drop CSV files here, or click to select files</p>
+                  <p className="text-xs text-gray-500">Drag and drop CSV files here, or click to select files</p>
                 )}
               </div>
-              {(uploadedFiles.length || null) && (
-                <div className='flex flex-row-reverse'>
-                  <Button size='sm' className='mb-2' variant='destructive' onClick={() => setShowConfirmDialog(true)}>
+              
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-row-reverse">
+                  <Button size="sm" className="mb-2 text-xs" variant="destructive" onClick={() => setShowConfirmDialog(true)}>
                     Delete All
                   </Button>
                 </div>
               )}
+              
               <AlertDialog open={showConfirmDialog}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription className='text-black'>
+                    <AlertDialogDescription className="text-gray-600 text-sm">
                       This action cannot be undone. This will permanently delete all uploaded property files.
                     </AlertDialogDescription>
-                    <div className='mt-4 flex items-center space-x-2'>
+                    <div className="mt-4 flex items-center space-x-2">
                       <Checkbox id={doNotShowAgainId} onCheckedChange={handleConfirmDialogChange} />
                       <Label
                         htmlFor={doNotShowAgainId}
-                        className='font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                        className="font-medium text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
                       >
                         Do not show again
                       </Label>
                     </div>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => removeFile()}>Continue</AlertDialogAction>
+                    <AlertDialogCancel onClick={() => setShowConfirmDialog(false)} className="text-xs">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => removeFile()} className="text-xs">Continue</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <ScrollArea className='h-[200px]'>
+              
+              <ScrollArea className="h-[200px] border border-gray-100 rounded-lg p-1">
                 {uploadedFiles.map(file => (
                   <div
                     key={file.name}
-                    className='mb-2 flex items-center justify-between rounded bg-primary-foreground p-2 shadow-sm'
+                    className="mb-2 flex items-center justify-between rounded-lg bg-gray-50 p-2 border border-gray-100"
                   >
-                    <div>
-                      <div className='flex gap-4 font-medium text-sm'>
+                    <div className="min-w-0 flex-1 pr-2">
+                      <div className="flex items-center gap-2 font-medium text-xs text-gray-800">
                         <Checkbox
                           id={file.name}
                           checked={checkedOptions[file.name] || false}
                           onCheckedChange={() => handleCheckboxChange(file.name)}
+                          className="shrink-0"
                         />
-                        {file.name}
+                        <span className="truncate" title={file.name}>{file.name}</span>
                       </div>
-                      <span className='ml-8 text-gray-500 text-xs'>
+                      <div className="block mt-0.5 ml-6 text-gray-400 text-[10px] truncate">
                         Date: {new Date(file.lastModified).toLocaleString()} | Size: {formatBytes(file.size)}
-                      </span>
+                      </div>
                     </div>
-                    <Button variant='ghost' size='icon' onClick={() => removeFile(file.name)}>
-                      <Trash2Icon className='size-4' />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-600 shrink-0" onClick={() => removeFile(file.name)}>
+                      <Trash2Icon className="size-3.5" />
                     </Button>
                   </div>
                 ))}
@@ -437,19 +428,27 @@ export function KGFileSheet() {
             </div>
             <SheetFooter>
               <SheetTrigger asChild>
-                <Button onClick={handlePropertyUpdate} className='w-full'>
+                <Button onClick={handlePropertyUpdate} className="w-full bg-teal-600 hover:bg-teal-700 text-xs">
                   Apply Properties
                 </Button>
               </SheetTrigger>
             </SheetFooter>
           </SheetContent>
         </Sheet>
-        <Button variant={'destructive'} size={'sm'} className='w-[48%] text-xs' onClick={handleReset}>
-          Reset Files
+        
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          className="flex-1 min-w-0 text-xs border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-colors h-9 shadow-none shrink-0" 
+          onClick={handleReset}
+        >
+          <span className="truncate">Reset Files</span>
         </Button>
       </div>
-      <div className='mt-2 text-gray-500 text-xs italic'>
-        <b>NOTE:</b> Uploaded files are stored in your browser and not shared with anyone.
+
+      <div className="mt-2 text-gray-400 text-[10px] italic leading-normal">
+        <span className="font-bold uppercase tracking-wide text-gray-500 not-italic mr-1">Note:</span> 
+        Uploaded files are stored locally in your browser session and are never shared.
       </div>
     </div>
   );
