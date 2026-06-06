@@ -28,7 +28,7 @@ const SUPPORTED_FORMATS = {
   },
   kg: {
     title: 'Knowledge Graphs',
-    desc: 'Upload entities and relationships between biological concepts.',
+    desc: 'Upload entities and relationships between biological concept.',
     exts: ['CSV', 'JSON', 'GraphML', 'GEXF', 'ZIP'],
     preview: 'source_id,target_id,edge_type\nBRCA1,BreastCancer,ASSOCIATES',
     links: [
@@ -86,7 +86,7 @@ export function UploadTab() {
           const store = await openDB('network', 'readwrite');
           if (!store) throw new Error('Failed to open storage');
 
-          try { await store.delete(NETWORK_STORAGE_KEYS.KNOWLEDGE_GRAPH); } catch {}
+          try { await store.delete(NETWORK_STORAGE_KEYS.KNOWLEDGE_GRAPH); } catch { }
           await store.put(graphData, NETWORK_STORAGE_KEYS.KNOWLEDGE_GRAPH);
 
           toast.success('Knowledge graph uploaded successfully');
@@ -100,7 +100,7 @@ export function UploadTab() {
 
       let distinctSeedGenes: string[] = [];
       const ext = file.name.split('.').pop()?.toLowerCase();
-      
+
       if (ext === 'json') {
         const jsonData = JSON.parse(await file.text());
         distinctSeedGenes = distinct(
@@ -150,7 +150,7 @@ export function UploadTab() {
       toast.error('Failed to open database');
       return;
     }
-    try { await store.delete(NETWORK_STORAGE_KEYS.GENE_NETWORK); } catch {}
+    try { await store.delete(NETWORK_STORAGE_KEYS.GENE_NETWORK); } catch { }
     store.put(file, NETWORK_STORAGE_KEYS.GENE_NETWORK);
     toast.success('File uploaded successfully');
     router.push(`/network?file=${encodeURIComponent(NETWORK_STORAGE_KEYS.GENE_NETWORK)}`);
@@ -159,8 +159,6 @@ export function UploadTab() {
   return (
     <div className='w-full border border-slate-200 bg-white p-6 rounded-xl shadow-sm'>
       <form onSubmit={e => { e.preventDefault(); void handleUploadSubmit(); }} className='space-y-6'>
-        
-        {/* Dynamic Title Context Head */}
         <div className='flex items-start justify-between gap-4'>
           <div className='space-y-1.5'>
             <Label htmlFor={uploadFileId} className='font-bold text-xl text-slate-800 tracking-tight'>
@@ -170,7 +168,7 @@ export function UploadTab() {
               Upload gene interaction networks or biological knowledge graphs. The platform automatically detects the file format and opens the appropriate visualization.
             </p>
           </div>
-          
+
           <TooltipProvider>
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
@@ -197,8 +195,8 @@ export function UploadTab() {
             required
             className='h-10 cursor-pointer border-dashed border-2 hover:border-teal-500 transition-colors text-sm file:text-xs file:font-semibold'
           />
-          
-          
+
+
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl bg-slate-50 border p-4'>
@@ -207,31 +205,32 @@ export function UploadTab() {
               <div className='space-y-1.5'>
                 <div className='flex items-center justify-between'>
                   <h4 className='font-bold text-slate-800 text-sm'>{item.title}</h4>
-                  <span className='text-[10px] text-teal-700 font-mono font-semibold uppercase px-1.5 py-0.5 bg-teal-50 border border-teal-100 rounded'>
-                    {item.exts.join(', ')}
-                  </span>
                 </div>
                 <p className='text-slate-600 text-xs leading-normal'>{item.desc}</p>
               </div>
 
               <div className='space-y-2 pt-2 border-t border-slate-100'>
-                <div className='flex items-center justify-between'>
+                <div className='flex flex-col items-center'>
                   <span className='text-[11px] text-slate-400 font-medium tracking-wide uppercase'>Templates</span>
-                  <div className='flex items-center gap-1.5'>
-                    {item.links.map(link => (
-                      <a
-                        key={link.label}
-                        href={link.href}
-                        download
-                        className='inline-flex flex-wrap items-center gap-1 rounded px-2 py-1 text-[11px] font-semibold bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all'
-                      >
-                        <DownloadIcon size={10} className='text-slate-500' />
-                        {link.label}
-                      </a>
+                  <div className='flex items-center gap-2 flex-wrap'>
+                    {item.links.map((link, index) => (
+                      <React.Fragment key={link.label}>
+                        <a
+                          href={link.href}
+                          download
+                          className='text-xs font-medium text-teal-600 underline underline-offset-2 hover:text-teal-700'
+                        >
+                          #{link.label.toLowerCase()}
+                        </a>
+
+                        {index < item.links.length - 1 && (
+                          <span className='text-slate-300'>•</span>
+                        )}
+                      </React.Fragment>
                     ))}
                   </div>
                 </div>
-                
+
                 <div className='space-y-1'>
                   <span className='text-[10px] text-slate-400 font-medium block'>Expected Schema Format:</span>
                   <pre className='overflow-x-auto rounded-md bg-slate-900 p-2.5 font-mono text-[11px] text-slate-200 leading-tight border border-slate-800 shadow-inner'>
@@ -245,17 +244,23 @@ export function UploadTab() {
 
         <Button
           type='submit'
-          disabled={loading}
-          className='relative h-12 w-full overflow-hidden bg-teal-600 font-semibold text-base text-white hover:bg-teal-700 shadow-sm transition-all rounded-lg'
+
+          className='relative w-full overflow-hidden font-semibold hover:opacity-90'
         >
           <AnimatedNetworkBackground
-            className='pointer-events-none absolute inset-0 h-full w-full opacity-25'
+            className='pointer-events-none absolute inset-0 h-full w-full opacity-40'
             moving={loading}
-            speedMultiplier={2.2}
+            speedMultiplier={10}
           />
-          <span className='relative z-10 flex items-center justify-center gap-2'>
-            {loading ? <LoaderIcon className='animate-spin' size={18} /> : <FileCodeIcon size={18} />}
-            Submit
+          <span className='relative z-10 flex items-center justify-center'>
+            {loading ? (
+              <>
+                <LoaderIcon className='mr-2 animate-spin' size={20} />
+                <span className='hidden sm:inline'>Submitting...</span>
+              </>
+            ) : (
+              'Submit'
+            )}
           </span>
         </Button>
       </form>
