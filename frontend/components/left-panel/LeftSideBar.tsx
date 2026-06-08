@@ -310,24 +310,7 @@ export function LeftSideBar() {
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-3 pt-2">
-        <button
-          type="button"
-          className="flex items-center justify-center gap-2 rounded-lg bg-[#00796B] px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#00695C]"
-        >
-          <Upload className="size-3.5" />
-          Upload Files
-        </button>
-        <button
-          type="button"
-          className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
-        >
-          <RotateCcw className="size-3.5" />
-          Reset
-        </button>
-      </div>
-
-      <div className="hidden">
+      <div >
         <FileSheet />
       </div>
     </ScrollArea>

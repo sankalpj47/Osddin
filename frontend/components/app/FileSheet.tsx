@@ -264,7 +264,7 @@ export function FileSheet() {
       <div className='flex flex-col justify-between gap-2 lg:flex-row'>
         <Sheet>
           <SheetTrigger asChild>
-            <Button size='sm' className='w-[48%] text-xs'>
+            <Button size='sm' className='w-[48%] text-xs hover:bg-[#00695C] text-white bg-[#00796B] font-semibold'>
               <UploadIcon className='size-3' />
               Upload Files
             </Button>
@@ -287,7 +287,7 @@ export function FileSheet() {
             </SheetHeader>
             <div className='py-4'>
               <div
-                className='mb-4 cursor-pointer rounded-lg border-2 border-gray-300 border-dashed p-4 text-center'
+                className="mb-4 cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-8 text-center transition-all duration-200 hover:border-primary hover:bg-primary/5"
                 {...getRootProps()}
               >
                 <input {...getInputProps()} />
@@ -362,7 +362,7 @@ export function FileSheet() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
-        <Button variant={'destructive'} size={'sm'} className='w-[48%] text-xs' onClick={handleReset}>
+        <Button size={'sm'} className='w-[48%] border border-gray-200 bg-white text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50' onClick={handleReset}>
           Reset Uploads
         </Button>
       </div>
