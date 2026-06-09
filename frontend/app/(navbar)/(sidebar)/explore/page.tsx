@@ -67,7 +67,7 @@ function ExploreContent() {
             <Chat />
           </div>
         </div>
-        <div className='hidden h-full flex-col xl:flex'>
+        <div className='sticky top-4 hidden h-[648px] flex-col xl:flex'>
           <Chat />
         </div>
       </div>

@@ -48,9 +48,9 @@ export function Chat() {
           </div>
 
           {/* Message area */}
-          <div className='flex min-h-0 flex-1 flex-col'>
+          <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
             {isChatOpen ? (
-              <div className='min-h-0 flex-1'>{renderMessages()}</div>
+              <div className='min-h-0 flex-1 overflow-hidden'>{renderMessages()}</div>
             ) : (
               <div className='flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center'>
                 <div className='flex h-16 w-16 items-center justify-center rounded-full bg-teal-50'>

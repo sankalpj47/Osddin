@@ -11,20 +11,6 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       <section className='mt-10 flex flex-col items-center'>
-        <h1 className='font-semibold text-2xl tracking-tight md:text-4xl'>About The Tool</h1>
-        <div className='mx-12 my-4 space-y-2 text-center'>
-          <p>
-            TBEP is an advanced network-based bioinformatics tool that accelerates drug target and biomarker discovery
-            using network analysis. It integrates deep multimodal datasets to uncover causal disease mechanisms linked
-            to specific phenotypes. Built on a cloud-based architecture, TBEP enables real-time processing of
-            large-scale biological data.{' '}
-          </p>
-          <p>
-            Additionally, it features a large language model (LLM) as an exploration assistant, helping researchers
-            interpret complex biological relationships. While the LLM currently operates separately from the network,
-            future iterations will enhance its integration for deeper insights.
-          </p>
-        </div>
         <h1 className='mt-4 font-semibold text-2xl tracking-tight md:text-4xl'>
           <b className='bg-linear-to-r from-teal-800 via-teal-600 to-teal-800 bg-clip-text text-transparent'>
             Get Started
