@@ -49,15 +49,15 @@ export function NetworkLayout() {
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 relative">
             {isAnimating && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${isAnimating ? 'bg-teal-500' : 'bg-gray-300'}`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${isAnimating ? 'bg-primary' : 'bg-gray-300'}`}></span>
           </span>
           <Switch 
             id={networkAnimationControlId} 
             checked={isAnimating} 
             onCheckedChange={handleGraphAnimation} 
-            className="data-[state=checked]:bg-teal-600"
+            className="data-[state=checked]:bg-primary"
           />
         </div>
       </div>
@@ -80,7 +80,7 @@ export function NetworkLayout() {
                     side="top" 
                     align="start" 
                     sideOffset={4} 
-                    className="max-w-xs p-2.5 text-xs bg-emerald-600 text-white border-none shadow-md rounded-lg leading-relaxed font-medium"
+                    className="max-w-xs p-2.5 text-xs border-none shadow-md rounded-lg leading-relaxed font-medium"
                   >
                     {option.tooltip}
                   </TooltipContent>
@@ -90,7 +90,7 @@ export function NetworkLayout() {
               <Input
                 type="number"
                 id={`input-${option.key}`}
-                className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-teal-500 bg-gray-50/50 p-1"
+                className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-primary bg-gray-50/50 p-1"
                 min={option.min}
                 max={option.max}
                 step={option.step}

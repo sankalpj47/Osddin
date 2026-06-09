@@ -72,12 +72,12 @@ export function KGNetworkLayout() {
             className='group flex items-center justify-between rounded-lg p-1 transition-colors hover:bg-gray-50'
           >
             <div className='flex items-center space-x-2'>
-              <div className='size-1.5 rounded-full bg-teal-200 transition-colors group-hover:bg-teal-600' />
+              <div className='size-1.5 rounded-full bg-primary/30 transition-colors group-hover:bg-primary' />
               <Label className='flex items-center gap-1 font-semibold text-gray-700 text-xs'>
                 {option.label}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-teal-600' />
+                    <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-primary' />
                   </TooltipTrigger>
                   <TooltipContent className='max-w-60' align='end'>
                     {option.tooltip}
@@ -91,7 +91,7 @@ export function KGNetworkLayout() {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                  className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-primary data-[state=open]:bg-gray-100 data-[state=open]:text-primary'
                 >
                   <SlidersHorizontalIcon className='size-3.5' />
                 </Button>
@@ -113,7 +113,7 @@ export function KGNetworkLayout() {
                       </Label>
                       <Input
                         type='number'
-                        className='h-6 w-14 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                        className='h-6 w-14 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                         min={option.min}
                         max={option.max}
                         step={option.step}

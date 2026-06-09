@@ -291,7 +291,7 @@ export function SearchTab() {
   const seedFileId = useId();
 
   return (
-    <div className='space-y-4 rounded-lg border border-teal-100 bg-white p-4 shadow-xs sm:space-y-5 sm:p-6 sm:py-4'>
+    <div className='space-y-4 rounded-lg border border-primary/20 bg-white p-4 shadow-xs sm:space-y-5 sm:p-6 sm:py-4'>
       {/* Disease row */}
       <div className='flex items-end justify-between gap-4'>
         <div className='flex-1 space-y-1'>
@@ -389,7 +389,7 @@ export function SearchTab() {
 
             {/* No. of genes */}
             {autofillEnabled && (
-              <div className='flex items-center gap-3 rounded-lg bg-teal-50 p-4'>
+              <div className='flex items-center gap-3 rounded-lg bg-primary/5 p-4'>
                 <Label htmlFor='autofill-gene-limit' className='whitespace-nowrap text-gray-700 text-sm'>
                   No. of genes
                 </Label>
@@ -400,7 +400,7 @@ export function SearchTab() {
                   min={1}
                   max={1000}
                   step={1}
-                  className='h-9 w-24 rounded-lg border-teal-400 text-center'
+                  className='h-9 w-24 rounded-lg border-primary text-center'
                   value={autofillGeneLimitInput}
                   onChange={e => setAutofillGeneLimitInput(e.target.value)}
                   disabled={topGenesLoading}
@@ -472,14 +472,14 @@ export function SearchTab() {
           Try examples:{' '}
           <button
             type='button'
-            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            className='cursor-pointer text-primary underline underline-offset-2 hover:text-primary/70'
             onClick={() => setFormData({ ...formData, seedGenes: 'MAPT, STX6, EIF2AK3, MOBP, DCTN1, LRRK2' })}
           >
             #1
           </button>{' '}
           <button
             type='button'
-            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            className='cursor-pointer text-primary underline underline-offset-2 hover:text-primary/70'
             onClick={() =>
               setFormData({
                 ...formData,
@@ -492,14 +492,14 @@ export function SearchTab() {
           </button>{' '}
           <button
             type='button'
-            className='cursor-pointer text-teal-600 underline underline-offset-2 hover:text-teal-800'
+            className='cursor-pointer text-primary underline underline-offset-2 hover:text-primary/70'
             onClick={() => setFormData({ ...formData, seedGenes: 'NT5C1B\nNT5C2\nTK2\nDCK\nDGUOK\nNT5C1A' })}
           >
             #3
           </button>
         </p>
 
-        <div className='flex w-fit overflow-hidden rounded-lg border border-gray-200 bg-teal-600/10 p-1'>
+        <div className='flex w-fit overflow-hidden rounded-lg border border-gray-200 bg-primary/10 p-1'>
           <button
             type='button'
             onClick={() => setSeedInputMode('type')}
@@ -549,20 +549,20 @@ export function SearchTab() {
               disabled={topGenesLoading}
             />
             <div
-              className={`flex h-40 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-all ${uploadedFile ? 'border-green-300 bg-green-50 hover:bg-green-100' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'}`}
+              className={`flex h-40 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-all ${uploadedFile ? 'border-primary/30 bg-primary/5 hover:bg-primary/10' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'}`}
             >
               {uploadedFile ? (
                 <div className='flex flex-col items-center gap-2 sm:flex-row sm:gap-3'>
-                  <CheckCircleIcon className='size-7 text-green-600' />
+                  <CheckCircleIcon className='size-7 text-primary' />
                   <div className='text-center sm:text-left'>
-                    <p className='font-medium text-green-800 text-sm'>{uploadedFile.name}</p>
-                    <p className='text-green-600 text-xs'>File uploaded successfully</p>
+                    <p className='font-medium text-primary text-sm'>{uploadedFile.name}</p>
+                    <p className='text-primary/70 text-xs'>File uploaded successfully</p>
                   </div>
                   <Button
                     type='button'
                     variant='ghost'
                     size='sm'
-                    className='z-10 text-green-600 hover:bg-green-200 hover:text-green-800'
+                    className='z-10 text-primary hover:bg-primary/10 hover:text-primary'
                     onClick={e => {
                       e.stopPropagation();
                       setUploadedFile(null);

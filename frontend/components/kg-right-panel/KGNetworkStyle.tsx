@@ -133,7 +133,7 @@ export function KGNetworkStyle() {
               Proportional Node Sizing
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-teal-600' />
+                  <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-primary' />
                 </TooltipTrigger>
                 <TooltipContent className='max-w-60' align='end'>
                   Size nodes proportionally based on their degree (number of connections)
@@ -147,7 +147,7 @@ export function KGNetworkStyle() {
               <Button
                 variant='ghost'
                 size='icon'
-                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-primary data-[state=open]:bg-gray-100 data-[state=open]:text-primary'
               >
                 <SlidersHorizontalIcon className='size-3.5' />
               </Button>
@@ -169,7 +169,7 @@ export function KGNetworkStyle() {
                     </Label>
                     <Input
                       type='number'
-                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                       min={1}
                       max={50}
                       step={1}
@@ -210,7 +210,7 @@ export function KGNetworkStyle() {
               <Button
                 variant='ghost'
                 size='icon'
-                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-primary data-[state=open]:bg-gray-100 data-[state=open]:text-primary'
               >
                 <SlidersHorizontalIcon className='size-3.5' />
               </Button>
@@ -232,7 +232,7 @@ export function KGNetworkStyle() {
                     </Label>
                     <Input
                       type='number'
-                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                       min={1}
                       max={25}
                       step={1}
@@ -265,7 +265,7 @@ export function KGNetworkStyle() {
                     </Label>
                     <Input
                       type='number'
-                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                       min={0}
                       max={10}
                       step={0.1}
@@ -313,7 +313,7 @@ export function KGNetworkStyle() {
               <Button
                 variant='ghost'
                 size='icon'
-                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-primary data-[state=open]:bg-gray-100 data-[state=open]:text-primary'
               >
                 <SlidersHorizontalIcon className='size-3.5' />
               </Button>
@@ -340,7 +340,7 @@ export function KGNetworkStyle() {
                       step={0.1}
                       value={edgeOpacity}
                       onChange={e => handleDefaultChange(parseFloat(e.target.value) || 0, 'edgeOpacity')}
-                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                     />
                   </div>
                   <Slider
@@ -369,7 +369,7 @@ export function KGNetworkStyle() {
                       step={0.1}
                       value={edgeWidth}
                       onChange={e => handleDefaultChange(parseFloat(e.target.value) || 0.1, 'edgeWidth')}
-                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-teal-600'
+                      className='h-6 w-12 border-gray-200 p-0.5 text-center text-xs focus-visible:ring-primary'
                     />
                   </div>
                   <Slider
@@ -406,7 +406,7 @@ export function KGNetworkStyle() {
             Highlight Neighbor Nodes
             <Tooltip>
               <TooltipTrigger asChild>
-                <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-teal-600' />
+                <HelpCircleIcon size={12} className='text-gray-400 transition-colors hover:text-primary' />
               </TooltipTrigger>
               <TooltipContent className='max-w-60' align='end'>
                 Upon checked, highlights the neighbors of the hovered nodes

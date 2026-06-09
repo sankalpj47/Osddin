@@ -22,7 +22,7 @@ const SUPPORTED_FORMATS = {
     title: 'Gene Networks',
     desc: 'Upload gene-gene interaction with confidence scores.',
     exts: ['CSV'],
-    preview: 'gene1,gene2,score\nBRCA1,TP53,0.95\nTP53,EGFR,0.87',
+    preview: 'gene1,gene2,score\nBRCA1,TP53,0.95\nTP53,EGFR,0.87\nAKT1,MTOR,0.99',
     links: [{ label: 'CSV', href: '/examples/network.csv' }],
     //  { label: 'JSON', href: '/examples/network.json' }
   },
@@ -30,7 +30,7 @@ const SUPPORTED_FORMATS = {
     title: 'Knowledge Graphs',
     desc: 'Upload entities and relationships between biological concept.',
     exts: ['CSV'],
-    preview: 'source_id,target_id,edge_type\nBRCA1,BreastCancer,ASSOCIATES',
+    preview: 'source_id,target_id,edge_type\nBRCA1,BreastCancer,ASSOCIATES\nEGFR,Erlotinib,TARGETED_BY',
     links: [
       { label: 'CSV', href: '/examples/kg.csv' },
       // { label: 'JSON', href: '/examples/kg.json' },
@@ -181,8 +181,7 @@ export function UploadTab() {
               Upload Network or Knowledge Graph File
             </Label>
             <p className='text-slate-500 text-[15px] leading-relaxed'>
-              Upload gene interaction networks or biological knowledge graphs. The platform automatically detects the
-              file format and opens the appropriate visualization.
+              
             </p>
           </div>
 
@@ -199,10 +198,10 @@ export function UploadTab() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent className='max-w-sm text-xs p-3 space-y-1.5' side='left'>
-                <p className='font-semibold text-slate-900'>Automated Verification Pipeline</p>
-                <p className='text-slate-600 leading-normal'>
-                  Upon dropping a file, structural mapping routines run schema checks to determine if the payload
-                  qualifies as a multi-entity Knowledge Graph or a direct Gene Network.
+                <p className='font-semibold text-white'>Automated Verification Pipeline</p>
+                <p className='text-white leading-normal'>
+                The platform automatically detects the
+              file format and opens the appropriate visualization.
                 </p>
               </TooltipContent>
             </Tooltip>

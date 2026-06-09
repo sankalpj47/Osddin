@@ -75,7 +75,7 @@ export function Export() {
                     id={universalCheckBoxId}
                     checked={csvSelections.universal}
                     onCheckedChange={() => handleCheckboxChange('universal')}
-                    className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                    className="border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <label htmlFor={universalCheckBoxId} className="text-xs font-medium text-gray-600 cursor-pointer select-none grow">
                     Universal
@@ -87,7 +87,7 @@ export function Export() {
                     id={interactionCheckBoxId}
                     checked={csvSelections.interaction}
                     onCheckedChange={() => handleCheckboxChange('interaction')}
-                    className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                    className="border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <label htmlFor={interactionCheckBoxId} className="text-xs font-medium text-gray-600 cursor-pointer select-none grow">
                     Interaction
@@ -96,7 +96,7 @@ export function Export() {
                 
                 <Button
                   size="sm"
-                  className="mt-1 h-8 rounded-lg bg-[#00796B] text-xs font-semibold text-white transition-colors hover:bg-[#00695C] disabled:bg-gray-100 disabled:text-gray-400"
+                  className="mt-1 h-8 rounded-lg bg-primary text-xs font-semibold text-white transition-colors hover:bg-primary/90 disabled:bg-gray-100 disabled:text-gray-400"
                   onClick={handleCsvExport}
                   disabled={!csvSelections.universal && !csvSelections.interaction}
                 >

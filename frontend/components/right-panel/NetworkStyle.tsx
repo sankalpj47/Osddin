@@ -53,7 +53,7 @@ export function NetworkStyle() {
             <Input
               type="number"
               id={`input-${defaultNodeSizeId}`}
-              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-teal-500 bg-gray-50/50 p-1"
+              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-primary bg-gray-50/50 p-1"
               min={1}
               max={50}
               step={1}
@@ -82,7 +82,7 @@ export function NetworkStyle() {
             <Input
               type="number"
               id={`input-${defaultLabelSizeId}`}
-              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-teal-500 bg-gray-50/50 p-1"
+              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-primary bg-gray-50/50 p-1"
               min={1}
               max={25}
               step={1}
@@ -126,7 +126,7 @@ export function NetworkStyle() {
             <Input
               type="number"
               id={`input-${defaultLabelDensityId}`}
-              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-teal-500 bg-gray-50/50 p-1"
+              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-primary bg-gray-50/50 p-1"
               min={0}
               max={10}
               step={0.1}
@@ -155,7 +155,7 @@ export function NetworkStyle() {
             <Input
               type="number"
               id={`input-${edgeOpacityId}`}
-              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-teal-500 bg-gray-50/50 p-1"
+              className="h-6.5 w-16 text-right font-mono text-xs rounded-md border-gray-200 focus-visible:ring-primary bg-gray-50/50 p-1"
               min={0}
               max={1}
               step={0.1}
@@ -188,7 +188,7 @@ export function NetworkStyle() {
               id={showEdgeColorId}
               checked={showEdgeColor}
               onCheckedChange={checked => handleCheckBox(checked, 'showEdgeColor')}
-              className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+              className="border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
             />
             <Label htmlFor={showEdgeColorId} className="text-xs font-medium text-gray-600 cursor-pointer select-none grow">
               Show edge colors based on interaction type
@@ -200,7 +200,7 @@ export function NetworkStyle() {
               id={highlightNeighborNodesId}
               checked={highlightNeighborNodes}
               onCheckedChange={checked => handleCheckBox(checked, 'highlightNeighborNodes')}
-              className="border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+              className="border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
             />
             <Label htmlFor={highlightNeighborNodesId} className="flex items-center gap-1.5 text-xs font-medium text-gray-600 cursor-pointer select-none grow">
               <span>Highlight neighbor genes</span>
@@ -215,7 +215,7 @@ export function NetworkStyle() {
                   side="top" 
                   align="start" 
                   sideOffset={4} 
-                  className="max-w-xs p-2.5 text-xs bg-emerald-600 text-white border-none shadow-md rounded-lg leading-relaxed font-medium"
+                  className="max-w-xs p-2.5 text-xs border-none shadow-md rounded-lg leading-relaxed font-medium"
                 >
                   When enabled, hovering over any marker dim-out irrelevant layers to emphasize local topological neighborhood connections.
                 </TooltipContent>

@@ -58,7 +58,7 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
 
 export function RightSideBar() {
   return (
-    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-[#F8F9FA] p-3 text-xs select-none">
+    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-background p-3 text-xs select-none">
       <SectionModule title="Network Info" icon={<ActivityIcon className="size-5" />}>
         <NetworkInfo/>
       </SectionModule>

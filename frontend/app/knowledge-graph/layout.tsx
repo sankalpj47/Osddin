@@ -43,37 +43,43 @@ export default function KnowledgeGraphLayout({ children }: { children: React.Rea
       onValueChange={value => setActiveTab(value as 'Network' | 'Statistics')}
       className='flex h-screen flex-col bg-gray-100'
     >
-      <div className='flex h-8 justify-between bg-muted px-4'>
-        <Button variant='hover' size='icon' className='h-full' onClick={() => setLeftSidebar(!leftSidebar)}>
-          {leftSidebar ? <ChevronLeft className='size-4' /> : <ChevronRight className='size-4' />}
+      <div className='flex h-10 w-full items-center justify-between border-b border-gray-200 bg-white px-4 shadow-xs'>
+        <Button variant='ghost' size='icon' className='h-8 w-8 hover:bg-gray-100' onClick={() => setLeftSidebar(!leftSidebar)}>
+          {leftSidebar ? <ChevronLeft className='size-4 text-gray-600' /> : <ChevronRight className='size-4 text-gray-600' />}
         </Button>
-        <h1 className='flex items-center font-semibold text-sm'>Knowledge Graph Visualization</h1>
-        <TabsList className='flex h-8 w-1/2 items-center gap-4'>
-          <TabsTrigger className='w-full' value='Network'>
-            Network Visualization
+        <TabsList className='flex h-9 bg-gray-100 p-1 rounded-lg border border-gray-200/60 w-1/3 min-w-[400px]'>
+          <TabsTrigger className='flex-1 text-xs font-medium' value='Network'>
+            Graph Visualization
           </TabsTrigger>
-          <TabsTrigger className='w-full' value='Statistics'>
+          <TabsTrigger className='flex-1 text-xs font-medium' value='Statistics'>
             Graph Statistics
           </TabsTrigger>
         </TabsList>
-        <div className='flex items-center gap-4'>
-          <Link
-            href={'/'}
-            className='hidden h-full items-center rounded-sm border-none p-2 text-xs transition-colors hover:bg-opacity-20 hover:text-black hover:underline md:inline-flex'
+        <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-1 border-r border-gray-200 pr-2 mr-1'>
+            <Link
+              href={'/'}
+              className='flex h-8 items-center rounded-md px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900'
+            >
+              <HomeIcon className='mr-1.5 inline size-3.5' /> Home
+            </Link>
+            <Link
+              href={'/docs'}
+              target='_blank'
+              className='flex h-8 items-center rounded-md px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900'
+            >
+              <FileTextIcon className='mr-1.5 inline size-3.5' /> Docs
+            </Link>
+          </div>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-8 w-8 hover:bg-gray-100'
+            onClick={() => setRightSidebar(!rightSidebar)}
           >
-            <HomeIcon className='mr-1 inline size-3' /> Home
-          </Link>
-          <Link
-            href={'/docs'}
-            target='_blank'
-            className='hidden h-full items-center rounded-sm border-none p-2 text-xs transition-colors hover:bg-opacity-20 hover:text-black hover:underline md:inline-flex'
-          >
-            <FileTextIcon className='mr-1 inline size-3' /> Docs
-          </Link>
+            {rightSidebar ? <ChevronRight className='size-4 text-gray-600' /> : <ChevronLeft className='size-4 text-gray-600' />}
+          </Button>
         </div>
-        <Button variant='hover' size='icon' className='h-full' onClick={() => setRightSidebar(!rightSidebar)}>
-          {rightSidebar ? <ChevronRight className='size-4' /> : <ChevronLeft className='size-4' />}
-        </Button>
       </div>
       <ResizablePanelGroup direction='horizontal' className='flex flex-1'>
         <ResizablePanel defaultSize={16} minSize={16} className={leftSidebar ? 'block' : 'hidden'}>

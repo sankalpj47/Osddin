@@ -187,7 +187,7 @@ export function LeftSideBar() {
   }
 
   return (
-    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-[#F8F9FA] p-4 text-gray-700 select-none">
+    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-background p-4 text-foreground select-none">
 
       {/* 1. Disease Select dropdown context */}
       <div className="mb-4 flex flex-col">
@@ -254,7 +254,7 @@ export function LeftSideBar() {
               #Seed Genes
             </Label>
             {isSeedGenesCollapsed && (
-              <span className="rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold text-teal-700 border border-teal-100">
+              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary border border-primary/20">
                 {geneNames?.length || 0} loaded
               </span>
             )}
@@ -285,18 +285,18 @@ export function LeftSideBar() {
                 <span>Shortcuts</span>
               </button>
             </TooltipTrigger>
-            <TooltipContent align="start" side="top" sideOffset={6} className="max-w-xs p-3 text-xs leading-relaxed shadow-md rounded-xl border border-gray-200 bg-white">
-              <ol className="space-y-2 text-gray-600">
+            <TooltipContent align="start" side="top" sideOffset={6} className="max-w-xs p-3 text-xs leading-relaxed shadow-md rounded-xl">
+                <ol className="space-y-2">
                 <li className="flex items-start gap-1">
-                  <span className="text-teal-600 font-bold">•</span>
+                  <span className="text-primary font-bold">•</span>
                   <span><b>Shift (⇧) + Drag</b>: Select multiple genes.</span>
                 </li>
                 <li className="flex items-start gap-1">
-                  <span className="text-teal-600 font-bold">•</span>
+                  <span className="text-primary font-bold">•</span>
                   <span><b>Cmd/Ctrl (⌘) + Hover</b>: Highlight neighbor genes.</span>
                 </li>
                 <li className="flex items-start gap-1">
-                  <span className="text-teal-600 font-bold">•</span>
+                  <span className="text-primary font-bold">•</span>
                   <span><b>Cmd/Ctrl (⌘) + Click</b>: Append gene to search.</span>
                 </li>
               </ol>

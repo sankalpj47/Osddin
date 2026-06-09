@@ -247,7 +247,26 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
                   className='group flex items-center justify-between rounded-lg p-1 transition-colors hover:bg-gray-50'
                 >
                   <div className='flex items-center space-x-2'>
-                    <RadioGroupItem value={name} id={name} onClick={() => name === 'None' && handleAlgoQuery(name)} />
+                    <RadioGroupItem
+                      value={name}
+                      id={name}
+                      onClick={() => {
+                        if (name === 'None') {
+                          handleAlgoQuery(name);
+                        } else {
+                          // Check if this algorithm requires select inputs (source/target)
+                          const needsSelectInput = parameters.some(p => p.type === 'select');
+                          if (!needsSelectInput) {
+                            // Auto-apply with default parameters
+                            const defaultParams: Record<string, string> = {};
+                            for (const param of parameters) {
+                              defaultParams[param.name] = String(param.defaultValue);
+                            }
+                            handleAlgoQuery(name, defaultParams);
+                          }
+                        }
+                      }}
+                    />
                     <Label
                       htmlFor={name}
                       className='cursor-pointer font-medium text-gray-500 text-xs transition-colors group-has-:checked:text-gray-900'
@@ -262,7 +281,7 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
                         <Button
                           variant='ghost'
                           size='icon'
-                          className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-teal-600 data-[state=open]:bg-gray-100 data-[state=open]:text-teal-600'
+                          className='size-5 text-gray-400 opacity-80 transition-colors hover:bg-gray-100 hover:text-primary data-[state=open]:bg-gray-100 data-[state=open]:text-primary'
                         >
                           <Settings2Icon className='size-3.5' />
                         </Button>
@@ -345,7 +364,7 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
                           <Button
                             type='submit'
                             size={'sm'}
-                            className='mt-1 h-8 w-full bg-teal-600 text-white text-xs hover:bg-teal-700'
+                            className='mt-1 h-8 w-full bg-primary text-white text-xs hover:bg-primary/90'
                             disabled={
                               (name === 'DWPC' || name === 'Path Finding') && (!formState.source || !formState.target)
                             }

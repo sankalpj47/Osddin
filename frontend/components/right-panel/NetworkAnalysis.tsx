@@ -109,7 +109,7 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
                     <RadioGroupItem
                       value={name}
                       id={`algo-${name}`}
-                      className='border-gray-300 text-teal-600 focus:ring-teal-500 size-3.5'
+                      className='border-gray-300 text-primary focus:ring-primary size-3.5'
                     />
                     <Label
                       htmlFor={`algo-${name}`}
@@ -125,7 +125,7 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
                         type='button'
                         variant='ghost'
                         size='sm'
-                        className='h-6 gap-1 px-2 text-[11px] font-medium text-teal-600 hover:bg-teal-50 hover:text-teal-700 rounded-md shrink-0'
+                        className='h-6 gap-1 px-2 text-[11px] font-medium text-primary hover:bg-primary/10 hover:text-primary rounded-md shrink-0'
                       >
                         <Settings2Icon className='size-3' />
                         Configure
@@ -175,7 +175,7 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
                               name={param.name}
                               id={param.name}
                               defaultChecked={param.defaultValue as boolean}
-                              className='border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600'
+                              className='border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary'
                             />
                           </div>
                         );
@@ -184,7 +184,7 @@ export function NetworkAnalysis({ children }: { children: React.ReactNode }) {
                       <Button
                         type='submit'
                         size='sm'
-                        className='w-full h-8 rounded-lg bg-[#00796B] text-xs font-semibold text-white hover:bg-[#00695C]'
+                        className='w-full h-8 rounded-lg bg-primary text-xs font-semibold text-white hover:bg-primary/90'
                       >
                         Apply Parameters
                       </Button>

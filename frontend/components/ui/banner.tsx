@@ -15,7 +15,7 @@ export function Banner({ children }: { children: React.ReactNode }) {
   return (
     <>
       {show && (
-        <div className='bg-teal-600 py-0.5 text-center'>
+        <div className='bg-primary py-0.5 text-center'>
           {children}
           <button
             type='button'

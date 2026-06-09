@@ -12,7 +12,7 @@ export function Chat() {
         <div className='flex h-full min-h-0 flex-col rounded-lg border border-gray-200 bg-white shadow-sm'>
           {/* Header */}
           <div className='flex items-center gap-3 border-gray-100 border-b px-5 py-3'>
-            <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-600'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary'>
               <svg
                 width='20'
                 height='20'
@@ -53,8 +53,8 @@ export function Chat() {
               <div className='min-h-0 flex-1 overflow-hidden'>{renderMessages()}</div>
             ) : (
               <div className='flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center'>
-                <div className='flex h-16 w-16 items-center justify-center rounded-full bg-teal-50'>
-                  <Lightbulb className='size-7 text-teal-500' strokeWidth={1.5} />
+                <div className='flex h-16 w-16 items-center justify-center rounded-full bg-primary/10'>
+                  <Lightbulb className='size-7 text-primary' strokeWidth={1.5} />
                 </div>
                 <div>
                   <p className='font-semibold text-base text-gray-800'>Ask me anything</p>
