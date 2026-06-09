@@ -3,7 +3,7 @@ import { useLazyQuery } from '@apollo/client/react';
 import { useSigma } from '@react-sigma/core';
 import { fitViewportToNodes } from '@sigma/utils';
 import { scaleLinear } from 'd3-scale';
-import { useSearchParams } from 'next/navigation';
+import { toUndirected } from 'graphology-operators';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { GENE_PROPERTIES_QUERY } from '@/lib/gql';
@@ -15,9 +15,15 @@ import {
   GenePropertyCategoryEnum,
   type NodeAttributes,
 } from '@/lib/interface';
-import { type EventMessage, Events, envURL, eventEmitter } from '@/lib/utils';
+import { type EventMessage, Events, eventEmitter } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+
+const LEIDEN_DEFAULT_PARAMETERS = {
+  resolution: '1',
+  minCommunitySize: '4',
+  weighted: 'true',
+};
 
 export function GraphAnalysis({
   highlightedNodesRef,
@@ -139,17 +145,17 @@ export function GraphAnalysis({
     }
   }, [radialAnalysis.seedGeneProximityCutOff]);
 
-  async function renewSession() {
-    const res = await fetch(`${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/algorithm/renew-session`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(useStore.getState().graphConfig!),
-    });
-    if (res.status === 202 || res.status === 409) return true;
-    return false;
-  }
+  // async function renewSession() {
+  //   const res = await fetch(`${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/algorithm/renew-session`, {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(useStore.getState().graphConfig!),
+  //   });
+  //   if (res.status === 202 || res.status === 409) return true;
+  //   return false;
+  // }
 
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: I won't write reason
   useEffect(() => {
@@ -162,27 +168,51 @@ export function GraphAnalysis({
           return attr;
         });
       } else if (name === 'Leiden') {
-        const { resolution, weighted, minCommunitySize } = parameters!;
-        if (searchParams?.get('file')) {
+        const { resolution, weighted, minCommunitySize } = {
+          ...LEIDEN_DEFAULT_PARAMETERS,
+          ...parameters,
+        };
+        const isWeighted = weighted === 'true' || weighted === 'on';
+
+        try {
           const louvain = await import('graphology-communities-louvain').then(lib => lib.default);
+
+          const undirectedGraph = toUndirected(graph, (currentAttr, nextAttr) => {
+            if (isWeighted && currentAttr.score && nextAttr.score) {
+              return {
+                ...currentAttr,
+                score: currentAttr.score + nextAttr.score,
+              };
+            }
+            return currentAttr;
+          });
+
+          const res = louvain.detailed(undirectedGraph, {
+            resolution: +resolution,
+            getEdgeWeight: isWeighted ? 'score' : null,
+          });
+
+          const map: Record<string, { name: string; genes: string[]; color: string }> = {};
+
+          let count = 0;
+
           const hslToHex = (h: number, s: number, l: number) => {
             l /= 100;
             const a = (s * Math.min(l, 1 - l)) / 100;
+
             const f = (n: number) => {
               const k = (n + h / 30) % 12;
+
               const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+
               return Math.round(255 * color)
                 .toString(16)
                 .padStart(2, '0');
             };
+
             return `#${f(0)}${f(8)}${f(4)}`;
           };
-          const res = louvain.detailed(graph, {
-            resolution: +resolution,
-            getEdgeWeight: weighted ? 'score' : null,
-          });
-          const map: Record<string, { name: string; genes: string[]; color: string }> = {};
-          let count = 0;
+
           for (const [node, comm] of Object.entries(res.communities)) {
             if (!map[comm]) {
               map[comm] = {
@@ -191,124 +221,79 @@ export function GraphAnalysis({
                 color: hslToHex(count * 137.508, 75, 50),
               };
             }
-            map[comm].genes.push(graph.getNodeAttribute(node, 'label') ?? 'N/A');
+
+            map[comm].genes.push(node);
           }
-          for (const { genes, color } of Object.values(map)) {
-            if (genes.length < +minCommunitySize) {
-              for (const gene of genes) {
-                graph.setNodeAttribute(gene, 'color', undefined);
+
+          // Color ALL communities first
+          for (const community of Object.values(map)) {
+            for (const gene of community.genes) {
+              if (graph.hasNode(gene)) {
+                graph.setNodeAttribute(gene, 'color', community.color);
+
+                graph.setNodeAttribute(gene, 'community', community.name);
               }
-              continue;
-            }
-            for (const gene of genes) {
-              graph.setNodeAttribute(gene, 'color', color);
             }
           }
-          setCommunityMap(map);
+
+          // Then apply minCommunitySize only as a filter
+          const displayMap: Record<
+            string,
+            {
+              name: string;
+              genes: string[];
+              color: string;
+            }
+          > = {};
+
+          for (const [id, community] of Object.entries(map)) {
+            if (community.genes.length >= +minCommunitySize) {
+              displayMap[id] = community;
+            }
+          }
+          setCommunityMap(displayMap);
+
           eventEmitter.emit(Events.ALGORITHM_RESULTS, {
             modularity: res.modularity,
             resolution: +resolution,
-            communities: Object.values(map).map(({ name, genes, color }) => {
+
+            communities: Object.values(displayMap).map(({ name, genes, color }) => {
               const [degreeSum, maxDegree] = genes.reduce(
                 ([acc, max], gene) => {
                   const degree = graph.degree(gene);
+
                   return [acc + degree, Math.max(max, degree)];
                 },
                 [0, 0],
               );
+
               return {
                 name,
-                nodes: genes.map(v => graph.getNodeAttribute(v, 'label')!),
+
+                nodes: genes.map(gene => graph.getNodeAttribute(gene, 'label') ?? gene),
+
                 color,
+
                 percentage: ((genes.length / graph.order) * 100).toFixed(2),
+
                 averageDegree: (degreeSum / genes.length).toFixed(2),
+
                 degreeCentralNode: graph.getNodeAttribute(
-                  genes.find(gene => graph.degree(gene) === maxDegree),
+                  genes.find(gene => graph.degree(gene) === maxDegree)!,
                   'label',
                 )!,
               };
             }),
-          } satisfies EventMessage[Events.ALGORITHM_RESULTS]);
-          return;
+          });
+
+          toast.success('Community detection completed', {
+            description: `Found ${Object.keys(displayMap).length} communities`,
+          });
+        } catch (error) {
+          console.error(error);
+
+          toast.error('Failed to run clustering');
         }
-        (async function leiden() {
-          const { graphName } = useStore.getState().graphConfig!;
-          const res = await fetch(
-            `${envURL(process.env.NEXT_PUBLIC_BACKEND_URL)}/algorithm/leiden?graphName=${encodeURIComponent(graphName)}&minCommunitySize=${minCommunitySize}${resolution ? `&resolution=${resolution}` : ''}&weighted=${encodeURIComponent(!!weighted)}`,
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-          );
-          if (res.ok) {
-            const {
-              communities,
-              modularity,
-            }: {
-              modularity: number;
-              communities: Record<string, { name: string; genes: string[]; color: string }>;
-            } = await res.json();
-            setCommunityMap(communities);
-            let count = 0;
-            for (const community of Object.values(communities)) {
-              count++;
-              for (const gene of community.genes) {
-                graph.setNodeAttribute(gene, 'color', community.color);
-              }
-            }
-            if (count > 100) {
-              toast.error('Too many communities, please increase the minimum community size or decrease resolution', {
-                cancel: { label: 'Close', onClick() {} },
-                description: 'This helps to reduce the number of communities',
-              });
-            }
-            eventEmitter.emit(Events.ALGORITHM_RESULTS, {
-              modularity,
-              resolution: +resolution,
-              communities: Object.values(communities).map(({ name, genes, color }) => {
-                const [degreeSum, maxDegree] = genes.reduce(
-                  ([acc, max], gene) => {
-                    const degree = graph.degree(gene);
-                    return [acc + degree, Math.max(max, degree)];
-                  },
-                  [0, 0],
-                );
-                return {
-                  name,
-                  nodes: genes.map(v => graph.getNodeAttribute(v, 'label')!),
-                  color,
-                  percentage: ((genes.length / graph.order) * 100).toFixed(2),
-                  averageDegree: (degreeSum / genes.length).toFixed(2),
-                  degreeCentralNode: graph.getNodeAttribute(
-                    genes.find(gene => graph.degree(gene) === maxDegree),
-                    'label',
-                  )!,
-                };
-              }),
-            } satisfies EventMessage[Events.ALGORITHM_RESULTS]);
-          } else if (res.status === 404) {
-            toast.promise(
-              new Promise<void>(async (resolve, reject) => {
-                const res = await renewSession();
-                if (res) {
-                  resolve();
-                  await leiden();
-                } else {
-                  reject();
-                }
-              }),
-              {
-                success: 'Session renewed',
-                loading: 'Session expired, renewing...',
-                error: 'Failed to renew session',
-                description: 'This may take a while, please be patient',
-                cancel: { label: 'Close', onClick() {} },
-              },
-            );
-          } else {
-            toast.error('Failed to fetch Leiden data', {
-              cancel: { label: 'Close', onClick() {} },
-              description: 'Server not available,Please try again later. Graph must have relationships to run Leiden.',
-            });
-          }
-        })();
       }
     });
   }, []);
@@ -335,11 +320,15 @@ export function GraphAnalysis({
                 }}
               />
               <Button
-                style={{ backgroundColor: val.color, color: getReadableTextColor(val.color) }}
-                className='h-5 w-32'
+                style={{
+                  backgroundColor: val.color,
+                  color: getReadableTextColor(val.color),
+                }}
+                className='h-5 w-40 justify-between px-2'
                 onClick={() => fitViewportToNodes(sigma, val.genes, { animate: true })}
               >
-                {val.name}
+                <span>{val.name}</span>
+                <span>({val.genes.length})</span>
               </Button>
             </div>
           ))}

@@ -349,7 +349,7 @@ export function SearchTab() {
       </div>
 
       {/* Advanced Settings Dialog */}
-      <AlertDialog open={advancedOpen}>
+      <AlertDialog open={advancedOpen} onOpenChange={setAdvancedOpen}>
         <AlertDialogContent className='max-w-md rounded-2xl p-6'>
           <AlertDialogHeader>
             <div className='flex items-start justify-between'>
@@ -422,6 +422,7 @@ export function SearchTab() {
                     if (autofillEnabled) {
                       setPendingAutofillDiseaseId(formData.diseaseMap);
                     }
+                    setAdvancedOpen(false);
                   }}
                 >
                   Apply

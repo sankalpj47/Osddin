@@ -55,8 +55,8 @@ export function ChatWindow() {
           
           {!isChatOpen && (
             <div className="absolute bottom-full left-3 mb-3 z-10 flex flex-col gap-2.5 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <NetworkInfo />
-              <Legend/>
+              {/* <NetworkInfo />
+              <Legend/> */}
             </div>
           )}
 

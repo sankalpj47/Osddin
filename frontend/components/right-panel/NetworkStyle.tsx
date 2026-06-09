@@ -77,7 +77,7 @@ export function NetworkStyle() {
         <div className="flex flex-col gap-2 rounded-lg border border-gray-50 bg-white p-2.5 shadow-3xs">
           <div className="flex items-center justify-between w-full">
             <Label htmlFor={defaultLabelSizeId} className="text-xs font-bold text-gray-700">
-              Label Typography Size
+              Label Size
             </Label>
             <Input
               type="number"
@@ -106,7 +106,7 @@ export function NetworkStyle() {
         <div className="flex flex-col gap-2 rounded-lg border border-gray-50 bg-white p-2.5 shadow-3xs">
           <div className="flex items-center justify-between w-full">
             <Label htmlFor={defaultLabelDensityId} className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
-              <span>Label Visibility Density</span>
+              <span>Label Density</span>
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
                   <button type="button" className="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -150,7 +150,7 @@ export function NetworkStyle() {
         <div className="flex flex-col gap-2 rounded-lg border border-gray-50 bg-white p-2.5 shadow-3xs">
           <div className="flex items-center justify-between w-full">
             <Label htmlFor={edgeOpacityId} className="text-xs font-bold text-gray-700">
-              Edge Link Opacity
+              Edge Opacity
             </Label>
             <Input
               type="number"

@@ -165,7 +165,7 @@ export function KGNetworkStyle() {
                 <div className='space-y-1.5'>
                   <div className='flex items-center justify-between'>
                     <Label htmlFor={defaultNodeSizeId} className='font-semibold text-gray-700 text-xs'>
-                      Base Node Size
+                      Node Size
                     </Label>
                     <Input
                       type='number'
@@ -202,7 +202,7 @@ export function KGNetworkStyle() {
             <div className='flex size-3.5 select-none items-center justify-center rounded-sm border border-gray-200 bg-gray-50 font-bold text-[9px] text-gray-500'>
               Aa
             </div>
-            <Label className='font-semibold text-gray-700 text-xs'>Label Typography & Density</Label>
+            <Label className='font-semibold text-gray-700 text-xs'>Label Density</Label>
           </div>
 
           <Popover>

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { parseGEXF, parseGraphML, parseJSON, parseSingleCSV, parseTwoCSV } from '@/lib/graph/knowledge-graph-parser';
 import { KNOWLEDGE_GRAPH_FILE_FORMATS, NETWORK_STORAGE_KEYS } from '@/lib/interface/knowledge-graph';
-import { openDB } from '@/lib/utils';
+import { idbRequestToPromise, idbTransactionDone, openDB } from '@/lib/utils';
 
 /**
  * KnowledgeGraphTab - Upload and manage knowledge graph files
@@ -220,7 +220,9 @@ export function KnowledgeGraphTab() {
         console.warn('No existing knowledge graph to delete:', error);
       }
 
-      store.put(graphData, NETWORK_STORAGE_KEYS.KNOWLEDGE_GRAPH);
+      const transactionDone = idbTransactionDone(store.transaction);
+      await idbRequestToPromise(store.put(graphData, NETWORK_STORAGE_KEYS.KNOWLEDGE_GRAPH));
+      await transactionDone;
 
       toast.success('Graph uploaded and parsed successfully!', {
         cancel: { label: 'Close', onClick() {} },
