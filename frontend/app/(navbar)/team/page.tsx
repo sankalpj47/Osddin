@@ -5,7 +5,7 @@ export default function TeamPage() {
   return (
     <>
       {team.map(category => (
-        <div key={category.heading} className='mb-4'>
+        <div key={category.heading} className='mb-4 mt-3'>
           <div id={category.heading}>
             <h2 className='mb-4 text-center font-semibold text-3xl text-primary'>{category.heading}</h2>
             <div className={'flex flex-col flex-wrap items-center justify-center gap-4 md:flex-row'}>
