@@ -46,7 +46,7 @@ export function NetworkInfo() {
             Selected Genes Details ({selectedNodes.length})
           </Button>
         )}
-        <PopUpDataTable
+        {/* <PopUpDataTable
           data={[selectedNodes, gseaData]}
           columns={[columnSelectedNodes, columnGseaResults]}
           dialogTitle={'Selected Genes'}
@@ -56,7 +56,7 @@ export function NetworkInfo() {
           setOpen={setShowTable}
           filterColumnNames={['Gene_Name', 'Pathway']}
           description='View the selected nodes and their details. Switch to "GSEA Analysis" to see gene set enrichment analysis results.'
-        />
+        /> */}
       </div>
     </div>
   );

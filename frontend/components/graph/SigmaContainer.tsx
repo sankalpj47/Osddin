@@ -15,6 +15,7 @@ import { drawDiscNodeHover, EdgeLineProgram, NodeCircleProgram } from 'sigma/ren
 import { DEFAULT_EDGE_COLOR } from '@/lib/data';
 import { NodeGradientProgram } from '@/lib/graph';
 import type { EdgeAttributes, NodeAttributes } from '@/lib/interface';
+import { NetworkSelectionToolbar } from '../right-panel';
 import {
   ColorAnalysis,
   ForceLayout,
@@ -26,6 +27,8 @@ import {
   SizeAnalysis,
   ZoomControl,
 } from '.';
+import { SelectionPlugin, type SelectionPluginHandle } from '@/lib/plugins/react-sigma-selection';
+import { useStore } from '@/lib/hooks';
 
 export function SigmaContainer(
   props: SigmaContainerProps<NodeAttributes, EdgeAttributes, Attributes> & { ref?: React.Ref<Sigma> },
@@ -33,6 +36,25 @@ export function SigmaContainer(
   const clickedNodesRef = React.useRef(new Set<string>());
   const highlightedNodesRef = React.useRef(new Set<string>());
   const seedProximityNodesRef = React.useRef(new Set<string>());
+  const selectionPluginRef = React.useRef<SelectionPluginHandle>(null);
+  const sigmaRef = React.useRef<Sigma | null>(null);
+
+  const handleSelectionChange = React.useCallback(
+    (nodeIds: string[]) => {
+      const graph = sigmaRef.current?.getGraph();
+
+      if (!graph) return;
+
+      useStore.setState({
+        selectedNodes: nodeIds.map(node => ({
+          Gene_Name: graph.getNodeAttribute(node, 'label') as string,
+          ID: node,
+          Description: graph.getNodeAttribute(node, 'description') as string,
+        })),
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     const sigmaContainer = document.querySelector('.sigma-container') as HTMLElement;
@@ -41,7 +63,17 @@ export function SigmaContainer(
 
   return (
     <_SigmaContainer
-      ref={props.ref}
+      ref={(sigma) => {
+        sigmaRef.current = sigma;
+
+        if (props.ref) {
+          if (typeof props.ref === 'function') {
+            props.ref(sigma);
+          } else {
+            props.ref.current = sigma;
+          }
+        }
+      }}
       className={props.className}
       settings={{
         ...props.settings,
@@ -82,6 +114,14 @@ export function SigmaContainer(
         seedProximityNodesRef={seedProximityNodesRef}
         highlightedNodesRef={highlightedNodesRef}
         clickedNodesRef={clickedNodesRef}
+        selectionPluginRef={selectionPluginRef}
+      />
+      <SelectionPlugin
+        ref={selectionPluginRef}
+        selectedNodeType="border"
+        onSelectionChange={handleSelectionChange}
+        shouldIncludeNode={(_id, attrs) => attrs.hidden !== true}
+        autoRegisterEvents={false}
       />
       <ForceLayout />
       <GraphSettings clickedNodesRef={clickedNodesRef} />
@@ -95,6 +135,11 @@ export function SigmaContainer(
           <MinimizeIcon />
         </FullScreenControl>
       </ControlsContainer>
+      <div className='pointer-events-none absolute top-1 left-1'>
+        <div className='pointer-events-auto rounded-lg border border-gray-200 bg-white shadow-md'>
+          <NetworkSelectionToolbar selectionPluginRef={selectionPluginRef} />
+        </div>
+      </div>
     </_SigmaContainer>
   );
 }

@@ -15,15 +15,18 @@ import type { CommonSection, EdgeAttributes, NodeAttributes, OtherSection, Selec
 import { Trie } from '@/lib/trie';
 import { cn } from '@/lib/utils';
 import { drawSelectionBox, findNodesInSelection } from '../../lib/graph/canvas-brush';
+import type { SelectionPluginHandle } from '@/lib/plugins/react-sigma-selection';
 
 export function GraphEvents({
   clickedNodesRef,
   highlightedNodesRef,
   seedProximityNodesRef,
+  selectionPluginRef
 }: {
   clickedNodesRef?: React.RefObject<Set<string>>;
   highlightedNodesRef: React.RefObject<Set<string>>;
   seedProximityNodesRef: React.RefObject<Set<string>>;
+  selectionPluginRef?: React.RefObject<SelectionPluginHandle | null>
 }) {
   const sigma = useSigma<NodeAttributes, EdgeAttributes>();
   const nodeSearchQuery = useStore(state => state.nodeSearchQuery);
@@ -241,29 +244,44 @@ export function GraphEvents({
       },
       /* Drag'n'Drop Program */
       downNode: e => {
-        if (isSelecting) return;
+        if (selectionPluginRef?.current?.isActive()) {
+          return;
+        }
+
         setDraggedNode(e.node);
       },
 
       /* Node Selection Program also starts */
       // On mouse move, if the drag mode is enabled, we change the position of the draggedNode
       mousemovebody: e => {
-        if (!isSelecting && !draggedNode) return;
-        if (isSelecting) {
-          handleMouseMove(e.original as MouseEvent);
-        } else if (draggedNode) {
-          const pos = sigma.viewportToGraph(e);
-          // Get new position of node
-          graph.setNodeAttribute(draggedNode, 'x', pos.x);
-          graph.setNodeAttribute(draggedNode, 'y', pos.y);
+        const selectionHandlers =
+          selectionPluginRef?.current?.getEventHandlers();
+
+        if (selectionHandlers) {
+          selectionHandlers.mousemovebody(e);
+          return;
         }
-        // Prevent sigma to move camera:
+
+        if (!draggedNode) return;
+
+        const pos = sigma.viewportToGraph(e);
+
+        graph.setNodeAttribute(draggedNode, 'x', pos.x);
+        graph.setNodeAttribute(draggedNode, 'y', pos.y);
+
         e.preventSigmaDefault();
         e.original.preventDefault();
         e.original.stopPropagation();
       },
       // On mouse up, we reset the autoscale and the dragging mode
       mouseup: () => {
+        const selectionHandlers =
+          selectionPluginRef?.current?.getEventHandlers();
+
+        if (selectionHandlers) {
+          selectionHandlers.mouseup();
+          return;
+        }
         if (draggedNode) {
           setDraggedNode(null);
         } else if (isSelecting) {
@@ -300,16 +318,17 @@ export function GraphEvents({
       },
       // Disable the autoscale at the first down interaction
       mousedown: e => {
-        if (e.original.shiftKey) handleMouseDown(e.original as MouseEvent);
-        else {
-          for (const node of _selectedNodes) {
-            if (highlightedNodesRef.current.has(node)) graph.setNodeAttribute(node, 'type', 'highlight');
-            else graph.setNodeAttribute(node, 'type', 'circle');
-          }
-          setSelectedNodes([]);
-          handleSelectedNodes([]);
+        const selectionHandlers =
+          selectionPluginRef?.current?.getEventHandlers();
+
+        if (selectionHandlers) {
+          selectionHandlers.mousedown(e);
+          return;
         }
-        if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+
+        if (!sigma.getCustomBBox()) {
+          sigma.setCustomBBox(sigma.getBBox());
+        }
       },
       clickNode: e => {
         const graph = sigma.getGraph();
@@ -368,7 +387,7 @@ export function GraphEvents({
       if (typeof selectedProperty === 'string') {
         const value = (
           universalData[node]?.[
-            userRadioArr?.includes(selectedProperty) ? 'user' : diseaseNameOrCommon
+          userRadioArr?.includes(selectedProperty) ? 'user' : diseaseNameOrCommon
           ] as OtherSection & CommonSection
         )?.[selectedRadio]?.[selectedProperty];
         return (
@@ -380,17 +399,17 @@ export function GraphEvents({
       }
       const values = selectedProperty.size
         ? Array.from(selectedProperty).map(prop => {
-            const value = (
-              universalData[node]?.[userRadioArr?.includes(prop) ? 'user' : diseaseNameOrCommon] as OtherSection &
-                CommonSection
-            )?.[selectedRadio]?.[prop];
-            return (
-              <div key={prop}>
-                <h3 className='wrap-break-word font-bold'>{prop}</h3>
-                <p className={cn(value ? 'italic' : '')}>{value || 'N/A'}</p>
-              </div>
-            );
-          })
+          const value = (
+            universalData[node]?.[userRadioArr?.includes(prop) ? 'user' : diseaseNameOrCommon] as OtherSection &
+            CommonSection
+          )?.[selectedRadio]?.[prop];
+          return (
+            <div key={prop}>
+              <h3 className='wrap-break-word font-bold'>{prop}</h3>
+              <p className={cn(value ? 'italic' : '')}>{value || 'N/A'}</p>
+            </div>
+          );
+        })
         : null;
       return values;
     },
