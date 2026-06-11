@@ -46,7 +46,7 @@ export function KGFileSheet() {
     openDB('files', 'readonly').then(store => {
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure you have enabled IndexedDB in your browser',
         });
         return;
@@ -68,7 +68,7 @@ export function KGFileSheet() {
       const store = await openDB('files', 'readwrite');
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure you have enabled IndexedDB in your browser',
         });
         return;
@@ -99,7 +99,7 @@ export function KGFileSheet() {
       if (fileRejections.length > 0) {
         const rejectedFiles = fileRejections.map(r => r.file.name).join(', ');
         toast.error(`Files rejected: ${rejectedFiles}`, {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure files are in CSV format',
         });
       }
@@ -120,7 +120,7 @@ export function KGFileSheet() {
     const store = await openDB('files', 'readwrite');
     if (!store) {
       toast.error('Failed to open IndexedDB database', {
-        cancel: { label: 'Close', onClick() {} },
+        cancel: { label: 'Close', onClick() { } },
         description: 'Please make sure you have enabled IndexedDB in your browser',
       });
       return;
@@ -138,13 +138,19 @@ export function KGFileSheet() {
   const handlePropertyUpdate = async () => {
     if (!sigmaInstance) {
       toast.error('Graph not loaded', {
-        cancel: { label: 'Close', onClick() {} },
+        cancel: { label: 'Close', onClick() { } },
         description: 'Please load a knowledge graph first',
       });
       return;
     }
 
     const graph = sigmaInstance.getGraph();
+
+    const id = [...graph.nodes()].find(
+      n => graph.getNodeAttribute(n, "label") === "SMOC1"
+    );
+
+    
     const radioOptions = useStore.getState().radioOptions;
     let updatedProperties = 0;
 
@@ -154,7 +160,7 @@ export function KGFileSheet() {
       const store = await openDB('files', 'readonly');
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
         });
         return;
       }
@@ -170,20 +176,61 @@ export function KGFileSheet() {
         const IDHeaderName = parsedData.meta.fields?.[0];
         if (!IDHeaderName) {
           toast.error(`Invalid file: ${file.name}`, {
-            cancel: { label: 'Close', onClick() {} },
+            cancel: { label: 'Close', onClick() { } },
             description: 'First column must be node ID',
           });
           return;
         }
 
-        const uploadedNodeIds = parsedData.data.map(row => row[IDHeaderName]).filter(id => graph.hasNode(id));
+        const csvIds = parsedData.data
+          .map(row => String(row[IDHeaderName]).trim());
+
+        
+
+        const labelToNodeId = new Map<string, string>();
+
+        graph.forEachNode((nodeId, attrs) => {
+          if (attrs.label) {
+            labelToNodeId.set(String(attrs.label).trim(), nodeId);
+          }
+
+          if (attrs.originalLabel) {
+            labelToNodeId.set(String(attrs.originalLabel).trim(), nodeId);
+          }
+        });
+
+        const uploadedNodeIds = parsedData.data
+          .map(row => String(row[IDHeaderName]).trim())
+          .map(gene => labelToNodeId.get(gene))
+          .filter((id): id is string => !!id);
         if (uploadedNodeIds.length === 0) {
           toast.error(`No matching nodes found in file: ${file.name}`, {
-            cancel: { label: 'Close', onClick() {} },
+            cancel: { label: 'Close', onClick() { } },
             description: 'Node IDs in file do not match graph nodes',
           });
           return;
         }
+
+        // Clear previous highlights if desired
+        graph.updateEachNodeAttributes((_node, attr) => {
+          attr.highlighted = false;
+          attr.type = undefined;
+          attr.size = useKGStore.getState().defaultNodeSize;
+          return attr;
+        });
+
+        // Highlight uploaded genes
+        uploadedNodeIds.forEach(nodeId => {
+          if (!graph.hasNode(nodeId)) return;
+
+          graph.setNodeAttribute(nodeId, 'highlighted', true);
+          graph.setNodeAttribute(nodeId, 'type', 'border');
+          graph.setNodeAttribute(
+            nodeId,
+            'size',
+            useKGStore.getState().defaultNodeSize * 1.5
+          );
+        });
 
         const firstNodeId = uploadedNodeIds[0];
         const targetNodeType = graph.getNodeAttribute(firstNodeId, 'nodeType') || 'Unknown';
@@ -199,8 +246,10 @@ export function KGFileSheet() {
 
             if (isGeneNode) {
               for (const row of parsedData.data) {
-                const nodeId = row[IDHeaderName];
-                if (!graph.hasNode(nodeId)) continue;
+                const geneSymbol = String(row[IDHeaderName]).trim();
+
+                const nodeId = labelToNodeId.get(geneSymbol);
+                if (!nodeId) continue;
 
                 if (!universalData[nodeId]) {
                   universalData[nodeId] = {
@@ -245,7 +294,7 @@ export function KGFileSheet() {
                   counter++;
                 }
                 toast.info(`Property "${propertyName}" renamed to "${finalPropertyName}"`, {
-                  cancel: { label: 'Close', onClick() {} },
+                  cancel: { label: 'Close', onClick() { } },
                   description: 'To avoid conflict with existing property',
                 });
               }
@@ -256,8 +305,10 @@ export function KGFileSheet() {
               };
 
               for (const row of parsedData.data) {
-                const nodeId = row[IDHeaderName];
-                if (!graph.hasNode(nodeId)) continue;
+                const geneSymbol = String(row[IDHeaderName]).trim();
+
+                const nodeId = labelToNodeId.get(geneSymbol);
+                if (!nodeId) continue;
 
                 if (!nodePropertyData[nodeId]) {
                   nodePropertyData[nodeId] = {};
@@ -277,7 +328,7 @@ export function KGFileSheet() {
         } catch (error) {
           console.error(error);
           toast.error('Error processing property data', {
-            cancel: { label: 'Close', onClick() {} },
+            cancel: { label: 'Close', onClick() { } },
           });
           return;
         }
@@ -286,7 +337,7 @@ export function KGFileSheet() {
 
     if (updatedProperties > 0) {
       toast.success(`${updatedProperties} properties loaded successfully`, {
-        cancel: { label: 'Close', onClick() {} },
+        cancel: { label: 'Close', onClick() { } },
         description: 'You can now use these properties for node coloring/sizing',
       });
     }
@@ -327,8 +378,9 @@ export function KGFileSheet() {
     useKGStore.setState({ nodePropertyData, kgPropertyOptions });
     useStore.setState({ universalData, radioOptions });
 
+
     toast.info('File properties reset successfully', {
-      cancel: { label: 'Close', onClick() {} },
+      cancel: { label: 'Close', onClick() { } },
     });
   };
 
@@ -339,8 +391,8 @@ export function KGFileSheet() {
       <div className="flex w-full items-center gap-2 min-w-0">
         <Sheet>
           <SheetTrigger asChild>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="flex-1 min-w-0 gap-1.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors h-9 shadow-none"
             >
               <UploadIcon className="size-3.5 shrink-0" />
@@ -366,7 +418,7 @@ export function KGFileSheet() {
                   <p className="text-xs text-gray-500">Drag and drop CSV files here, or click to select files</p>
                 )}
               </div>
-              
+
               {uploadedFiles.length > 0 && (
                 <div className="flex flex-row-reverse">
                   <Button size="sm" className="mb-2 text-xs" variant="destructive" onClick={() => setShowConfirmDialog(true)}>
@@ -374,7 +426,7 @@ export function KGFileSheet() {
                   </Button>
                 </div>
               )}
-              
+
               <AlertDialog open={showConfirmDialog}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -398,7 +450,7 @@ export function KGFileSheet() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              
+
               <ScrollArea className="h-[200px] border border-gray-100 rounded-lg p-1">
                 {uploadedFiles.map(file => (
                   <div
@@ -435,11 +487,11 @@ export function KGFileSheet() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
-        
-        <Button 
-          variant="destructive" 
-          size="sm" 
-          className="flex-1 min-w-0 text-xs border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-colors h-9 shadow-none shrink-0" 
+
+        <Button
+          variant="destructive"
+          size="sm"
+          className="flex-1 min-w-0 text-xs border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-colors h-9 shadow-none shrink-0"
           onClick={handleReset}
         >
           <span className="truncate">Reset Files</span>
@@ -447,7 +499,7 @@ export function KGFileSheet() {
       </div>
 
       <div className="mt-2 text-gray-400 text-[10px] italic leading-normal">
-        <span className="font-bold uppercase tracking-wide text-gray-500 not-italic mr-1">Note:</span> 
+        <span className="font-bold uppercase tracking-wide text-gray-500 not-italic mr-1">Note:</span>
         Uploaded files are stored locally in your browser session and are never shared.
       </div>
     </div>

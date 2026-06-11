@@ -234,7 +234,7 @@ export function UploadTab() {
 
               <div className='space-y-2 pt-2 border-t border-slate-100'>
                 <div className='flex flex-col items-center'>
-                  <span className='text-[11px] text-slate-400 font-medium tracking-wide uppercase'>Templates</span>
+                  <span className='text-[11px] text-slate-400 font-medium tracking-wide uppercase'>Example Templates</span>
                   <div className='flex items-center gap-2 flex-wrap'>
                     {item.links.map((link, index) => (
                       <React.Fragment key={link.label}>

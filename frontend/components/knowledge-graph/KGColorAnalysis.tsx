@@ -26,6 +26,17 @@ export function KGColorAnalysis() {
   const showEdgeColor = useKGStore(state => state.showEdgeColor);
   const edgeOpacity = useKGStore(state => state.edgeOpacity);
   const graph = useSigma<NodeAttributes, EdgeAttributes>().getGraph();
+
+  const selectedNodeColorPropertyStore =
+    useStore(state => state.selectedNodeColorProperty);
+
+  const selectedNodeColorPropertyKG =
+    useKGStore(state => state.selectedNodeColorProperty);
+
+  console.log({
+    store: selectedNodeColorPropertyStore,
+    kg: selectedNodeColorPropertyKG,
+  });
   // Edge coloring
   useEffect(() => {
     if (!graph) return;
