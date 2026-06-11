@@ -248,10 +248,15 @@ export function searchNodes(input: SearchNodesInput, context: ToolContext): Tool
   const { query, nodeType, limit = '20' } = input;
   const graph = getGraph(context);
   const nodeNameToIdTrie = context.store.nodeNameToIdTrie;
+  const normalizedQuery = query.trim();
 
   const results: SearchNodesOutput['nodes'] = [];
 
-  const matchedNodeIds = nodeNameToIdTrie.search(query).map(entry => entry.value);
+  const matchedNodeIds = new Set<string>(nodeNameToIdTrie.search(normalizedQuery).map(entry => entry.value));
+
+  if (normalizedQuery.length > 0 && graph.hasNode(normalizedQuery)) {
+    matchedNodeIds.add(normalizedQuery);
+  }
 
   for (const nodeId of matchedNodeIds) {
     if (!graph.hasNode(nodeId)) continue;
@@ -296,7 +301,7 @@ export function getNodeProperties(
   // biome-ignore lint/suspicious/noExplicitAny: Node properties can be of any type from file/backend
   const properties: Record<string, any>[] = [];
   for (const nodeId of nodeIds) {
-    if (!graph.hasNode(nodeId)) continue;
+    if (!graph.hasNode(nodeId) ) continue;
     const attrs = graph.getNodeAttributes(nodeId);
 
     // CRITICAL: Skip hidden nodes
@@ -336,50 +341,54 @@ export async function findSimplePaths(
 ): Promise<ToolResult<FindSimplePathsOutput>> {
   const { sourceLabelOrId, targetLabelOrId, maxLength = '5', maxPaths = '100' } = input;
   const graph = getGraph(context);
-  const maxLengthNum = parseNumberLike(maxLength, 5);
+  const maxLengthNum = parseNumberLike(maxLength, 15);
   const maxPathsNum = parseNumberLike(maxPaths, 100);
+
+  const buildEmptyResult = (summary: string): ToolResult<FindSimplePathsOutput> => ({
+    success: true,
+    data: {
+      paths: [],
+      count: 0,
+      sourceId: sourceLabelOrId,
+      targetId: targetLabelOrId,
+      summary,
+    },
+  });
 
   // Resolve labels to IDs
   const sourceLabel = resolveLabelOrId(graph, sourceLabelOrId, context.store.nodeNameToIdTrie);
   const targetLabel = resolveLabelOrId(graph, targetLabelOrId, context.store.nodeNameToIdTrie);
 
   if (!sourceLabel) {
-    return {
-      success: false,
-      error: `Source node '${sourceLabelOrId}' not found`,
-    };
+    return buildEmptyResult(
+      `Source node '${sourceLabelOrId}' was not found. Pick an existing source node and try again.`,
+    );
   }
 
   if (!targetLabel) {
-    return {
-      success: false,
-      error: `Target node '${targetLabelOrId}' not found`,
-    };
+    return buildEmptyResult(
+      `Target node '${targetLabelOrId}' was not found. Pick an existing target node and try again.`,
+    );
   }
 
   // Check if nodes are hidden
   if (graph.getNodeAttribute(sourceLabel, 'hidden')) {
-    return {
-      success: false,
-      error: `Source node '${sourceLabelOrId}' is currently hidden`,
-    };
+    return buildEmptyResult(`Source node '${sourceLabelOrId}' is currently hidden, so path search could not run.`);
   }
 
   if (graph.getNodeAttribute(targetLabel, 'hidden')) {
-    return {
-      success: false,
-      error: `Target node '${targetLabelOrId}' is currently hidden`,
-    };
+    return buildEmptyResult(`Target node '${targetLabelOrId}' is currently hidden, so path search could not run.`);
   }
 
   // CRITICAL: Register listener BEFORE emitting event to avoid race condition
   return new Promise(resolve => {
     const handleResults = (results: EventMessage[Events.ALGORITHM_RESULTS]) => {
       if (!results.paths || results.paths.length === 0) {
-        resolve({
-          success: false,
-          error: 'No paths found between nodes',
-        });
+        resolve(
+          buildEmptyResult(
+            `No paths were found between '${sourceLabelOrId}' and '${targetLabelOrId}'. Try a broader or simpler query.`,
+          ),
+        );
         return;
       }
 
@@ -426,10 +435,9 @@ export async function findSimplePaths(
     // Timeout after 60 seconds
     setTimeout(() => {
       eventEmitter.off(Events.ALGORITHM_RESULTS, handleResults);
-      resolve({
-        success: false,
-        error: 'Path finding timed out after 60 seconds',
-      });
+      resolve(
+        buildEmptyResult('Path finding took too much time and timed out after 60 seconds. Try something simpler.'),
+      );
     }, 60000);
   });
 }

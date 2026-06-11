@@ -24,7 +24,7 @@ export const MODEL_ID_LIST = Object.values(MODEL_IDS);
 
 // Default model (can be changed in one place)
 // NOTE: Use GPT_OSS for tool calling support - Llama models have limited function calling support
-export const DEFAULT_MODEL: ModelId = MODEL_IDS.GPT_OSS;
+export const DEFAULT_MODEL: ModelId = MODEL_IDS.LLAMA_3;
 
 // Helper to resolve a model id safely by key
 export function getModelId(key: ModelKey): ModelId {
