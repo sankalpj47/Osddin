@@ -13,18 +13,23 @@ type TeamCategory = {
 };
 
 export const team: TeamCategory[] = [
+  // {
+  //   heading: 'Principal Investigator',
+  //   members: [
+  //     {
+  //       name: 'Dr. Gyan P. Srivastava',
+  //       title: `Department of Electrical Engineering and Computer Science
+  //       University of Missouri, Columbia`,
+  //       email: 'gps8b9@missouri.edu',
+  //       link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
+  //       image: '/image/team/gpsrivastava.jpg',
+  //     },
+  //   ],
+  // },
   {
-    heading: 'Scientific Leadership Team',
+    heading: 'Co-Investigators',
     members: [
       {
-        name: 'Dr. Gyan P. Srivastava',
-        title: `Department of Electrical Engineering and Computer Science
-        University of Missouri, Columbia`,
-        email: 'gps8b9@missouri.edu',
-        link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
-        image: '/image/team/gpsrivastava.jpg',
-      },
-         {
         name: 'Prof. Dong Xu',
         title: `Department of Electrical Engineering and Computer Science
         University of Missouri, Columbia`,
@@ -43,7 +48,7 @@ export const team: TeamCategory[] = [
     ],
   },
   {
-    heading: 'Development Team',
+    heading: 'Tbep v2 Development Team',
     members: [
       {
         name: 'Shivansh Gupta',
@@ -91,7 +96,7 @@ export const team: TeamCategory[] = [
     ],
   },
   {
-    heading: 'Alluminus',
+    heading: 'Tbep Development Team',
     members: [
       {
         name: 'Bhupesh Dewangan',
