@@ -186,6 +186,17 @@ export function KGGraphEvents({
     sigma.refresh();
   }, [nodeSearchQuery, sigma]);
 
+  // Sync clicked node to selectedNodes in store for AI context and right panel
+  useEffect(() => {
+    if (clickedNode) {
+      useKGStore.setState({ selectedNodes: Array.from(clickedNodesRef.current) });
+    } else {
+      if (!selectionPluginRef?.current?.isActive()) {
+        useKGStore.setState({ selectedNodes: [] });
+      }
+    }
+  }, [clickedNode, clickedNodesRef, selectionPluginRef]);
+
   // Register event handlers
   // biome-ignore lint/correctness/useExhaustiveDependencies: activePropertyNodeTypes read from store in callbacks
   useEffect(() => {
