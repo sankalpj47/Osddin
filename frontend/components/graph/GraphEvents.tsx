@@ -419,7 +419,7 @@ export function GraphEvents({
   return (
     <>
       {clickedNode && (
-        <div className='absolute top-0 right-0 m-1 max-h-[80vh] w-80 space-y-1 overflow-y-auto rounded border p-1 text-xs shadow-sm backdrop-blur-sm'>
+        <div className='absolute top-0 right-0 m-1 max-h-[80vh] w-fit max-w-80 space-y-1 overflow-y-auto rounded border p-1 text-xs text-right shadow-sm backdrop-blur-sm'>
           <div>
             <h3 className='font-bold'>Ensembl ID</h3>
             <p>{clickedNode}</p>

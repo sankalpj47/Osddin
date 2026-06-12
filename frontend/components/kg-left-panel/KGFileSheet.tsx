@@ -1,7 +1,7 @@
 'use client';
 
 import type { CheckedState } from '@radix-ui/react-checkbox';
-import { Trash2Icon, UploadIcon } from 'lucide-react';
+import { Trash2Icon} from 'lucide-react';
 import Papa from 'papaparse';
 import React, { useId } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -395,7 +395,6 @@ export function KGFileSheet() {
               size="sm"
               className="flex-1 min-w-0 gap-1.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors h-9 shadow-none"
             >
-              <UploadIcon className="size-3.5 shrink-0" />
               <span className="truncate">Upload Files</span>
             </Button>
           </SheetTrigger>
@@ -496,11 +495,6 @@ export function KGFileSheet() {
         >
           <span className="truncate">Reset Files</span>
         </Button>
-      </div>
-
-      <div className="mt-2 text-gray-400 text-[10px] italic leading-normal">
-        <span className="font-bold uppercase tracking-wide text-gray-500 not-italic mr-1">Note:</span>
-        Uploaded files are stored locally in your browser session and are never shared.
       </div>
     </div>
   );

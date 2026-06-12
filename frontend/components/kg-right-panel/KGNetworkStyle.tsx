@@ -103,21 +103,7 @@ export function KGNetworkStyle() {
   }, [edgeWidth, graph]);
 
   return (
-    <Collapsible defaultOpen className='mb-2 rounded-xl border border-gray-200 bg-white p-2 text-xs shadow-sm'>
-      <div className='flex w-full items-center justify-between'>
-        <p className='font-bold text-gray-800'>Network Style</p>
-        <CollapsibleTrigger asChild>
-          <Button
-            type='button'
-            variant='outline'
-            size='icon'
-            className='size-6 border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-          >
-            <ChevronsUpDownIcon size={15} />
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-      <CollapsibleContent className='mt-1 flex flex-col gap-1.5'>
+    <div className='w-full flex flex-col gap-4 min-w-0'>
         {/* Node Sizing and Configurations */}
         <div className='group flex items-center justify-between rounded-lg p-1 transition-colors hover:bg-gray-50'>
           <div className='flex items-center space-x-2'>
@@ -414,7 +400,6 @@ export function KGNetworkStyle() {
             </Tooltip>
           </Label>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+    </div>
   );
 }

@@ -207,22 +207,8 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Collapsible defaultOpen className='mb-2 rounded-xl border border-gray-200 bg-white p-2 text-xs shadow-sm'>
-      <div className='flex w-full items-center justify-between'>
-        <p className='font-bold text-gray-800'>Network Analysis</p>
-        <CollapsibleTrigger asChild>
-          <Button
-            type='button'
-            variant='outline'
-            size='icon'
-            className='size-6 border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-          >
-            <ChevronsUpDownIcon size={15} />
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-
-      <CollapsibleContent className='mt-2'>
+    <div className='w-full flex flex-col min-w-0'>
+      <div className='mt-2'>
         <Tabs defaultValue='type' className='w-full'>
           <TabsList className='mb-3 grid h-8 w-full grid-cols-2 rounded-lg bg-gray-100 p-0.5'>
             <TabsTrigger
@@ -579,7 +565,7 @@ export function KGNetworkAnalysis({ children }: { children: React.ReactNode }) {
             )}
           </>
         )}
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
   );
 }

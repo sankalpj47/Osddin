@@ -95,37 +95,25 @@ export function KGLegend() {
   };
 
   return (
-    <div className='mb-2'>
-      <Collapsible defaultOpen className='rounded border p-2 text-xs shadow-sm bg-white'>
-        <div className='flex w-full items-center justify-between'>
-          <p className='font-bold'>Legends</p>
-          <CollapsibleTrigger asChild>
-            <Button type='button' variant='outline' size='icon' className='size-6'>
-              <ChevronsUpDownIcon size={15} />
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-        <CollapsibleContent className='flex flex-col gap-2 p-1 mt-1'>
-          <NodeTypeLegend />
+    <div className='w-full flex flex-col min-w-0 gap-2 p-1'>
+      <NodeTypeLegend />
 
-          <hr className='my-0.5' />
-          <div className='flex flex-col items-center gap-2 w-full'>
-            {renderPropertyLegend()}
-            
-            {showEdgeColor && (
-              <div className='w-full border-t pt-2 mt-1'>
-                <HeatmapLegend
-                  title='Edge Color'
-                  range={['yellow', 'red']}
-                  domain={[0, 1]}
-                  divisions={10}
-                  height={40}
-                />
-              </div>
-            )}
+      <hr className='my-0.5' />
+      <div className='flex flex-col items-center gap-2 w-full'>
+        {renderPropertyLegend()}
+        
+        {showEdgeColor && (
+          <div className='w-full border-t pt-2 mt-1'>
+            <HeatmapLegend
+              title='Edge Color'
+              range={['yellow', 'red']}
+              domain={[0, 1]}
+              divisions={10}
+              height={40}
+            />
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        )}
+      </div>
     </div>
   );
 }

@@ -129,37 +129,34 @@ export function KGNetworkInfo() {
   const buttonText = hasSelection ? `Selected Nodes (${selectedNodes.length})` : `All Network Data`;
 
   return (
-    <div className='mb-2 rounded border p-2 text-xs shadow-sm bg-white'>
-      <p className='mb-2 font-bold'>Network Info</p>
-      <div className='flex flex-col justify-between'>
-        <div className='flex flex-col gap-1 text-muted-foreground'>
-          <span>Total Nodes: <b className='text-foreground'>{totalNodes}</b></span>
-          <span>Total Edges: <b className='text-foreground'>{totalEdges}</b></span>
-        </div>
-        
-        <Button variant='outline' size='sm' className='mt-2 font-semibold text-xs h-7' onClick={handleShowTable}>
-          {buttonText}
-        </Button>
-        
-        <PopUpDataTable
-          data={[displayNodes, displayEdges]}
-          columns={[columnKGSelectedNodes, columnKGConnectedEdges]}
-          dialogTitle={hasSelection ? 'Selected Nodes' : 'All Network Data'}
-          tabsTitle={['Node Properties', 'Edges Properties']}
-          open={showTable}
-          loading={[false, false]}
-          setOpen={setShowTable}
-          filterColumnNames={[
-            ['id', 'label'],
-            ['source', 'target', 'sourceLabel', 'targetLabel'],
-          ]}
-          description={
-            hasSelection
-              ? 'View the selected nodes and their details. Switch to "Edges Properties" to see edges linked to these nodes.'
-              : 'View all nodes and edges in the network.'
-          }
-        />
+    <div className='w-full flex flex-col min-w-0'>
+      <div className='flex flex-col gap-1 text-muted-foreground'>
+        <span>Total Nodes: <b className='text-foreground'>{totalNodes}</b></span>
+        <span>Total Edges: <b className='text-foreground'>{totalEdges}</b></span>
       </div>
+      
+      <Button variant='outline' size='sm' className='mt-2 font-semibold text-xs h-7' onClick={handleShowTable}>
+        {buttonText}
+      </Button>
+      
+      <PopUpDataTable
+        data={[displayNodes, displayEdges]}
+        columns={[columnKGSelectedNodes, columnKGConnectedEdges]}
+        dialogTitle={hasSelection ? 'Selected Nodes' : 'All Network Data'}
+        tabsTitle={['Node Properties', 'Edges Properties']}
+        open={showTable}
+        loading={[false, false]}
+        setOpen={setShowTable}
+        filterColumnNames={[
+          ['id', 'label'],
+          ['source', 'target', 'sourceLabel', 'targetLabel'],
+        ]}
+        description={
+          hasSelection
+            ? 'View the selected nodes and their details. Switch to "Edges Properties" to see edges linked to these nodes.'
+            : 'View all nodes and edges in the network.'
+        }
+      />
     </div>
   );
 }

@@ -32,10 +32,10 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="mb-3 flex flex-col rounded-xl border border-gray-200 bg-white shadow-xs overflow-hidden transition-all duration-200">
+    <div className="mb-2 flex flex-col rounded-xl border border-gray-200 bg-white shadow-xs overflow-hidden transition-all duration-200">
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex cursor-pointer items-center justify-between bg-white px-4 py-3 select-none hover:bg-gray-50/80 active:bg-gray-50"
+        className="flex cursor-pointer items-center justify-between bg-white px-3 py-2 select-none hover:bg-gray-50/80 active:bg-gray-50"
       >
         <div className="flex items-center gap-2.5">
           <span className="text-xs font-bold text-gray-800 tracking-tight">
@@ -48,7 +48,7 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
       </div>
       
       {isOpen && (
-        <div className="border-t border-gray-100 p-3 bg-white text-gray-600 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="border-t border-gray-100 p-2 bg-white text-gray-600 animate-in fade-in slide-in-from-top-1 duration-150">
           {children}
         </div>
       )}
@@ -58,7 +58,7 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
 
 export function RightSideBar() {
   return (
-    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-background p-3 text-xs select-none">
+    <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-background p-2 text-xs select-none">
       <SectionModule title="Network Info" icon={<ActivityIcon className="size-5" />}>
         <NetworkInfo/>
       </SectionModule>

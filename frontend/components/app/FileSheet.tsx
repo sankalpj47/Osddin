@@ -1,7 +1,7 @@
 'use client';
 
 import type { CheckedState } from '@radix-ui/react-checkbox';
-import { Trash2Icon, UploadIcon } from 'lucide-react';
+import { Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import React, { useId } from 'react';
@@ -45,7 +45,7 @@ export function FileSheet() {
     openDB('files', 'readonly').then(store => {
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure you have enabled IndexedDB in your browser',
         });
         return;
@@ -67,7 +67,7 @@ export function FileSheet() {
       const store = await openDB('files', 'readwrite');
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure you have enabled IndexedDB in your browser',
         });
         return;
@@ -99,7 +99,7 @@ export function FileSheet() {
       if (fileRejections.length > 0) {
         const rejectedFiles = fileRejections.map(r => r.file.name).join(', ');
         toast.error(`Files rejected: ${rejectedFiles}`, {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure files are in CSV format',
         });
       }
@@ -121,7 +121,7 @@ export function FileSheet() {
     const store = await openDB('files', 'readwrite');
     if (!store) {
       toast.error('Failed to open IndexedDB database', {
-        cancel: { label: 'Close', onClick() {} },
+        cancel: { label: 'Close', onClick() { } },
         description: 'Please make sure you have enabled IndexedDB in your browser',
       });
       return;
@@ -147,7 +147,7 @@ export function FileSheet() {
       const store = await openDB('files', 'readonly');
       if (!store) {
         toast.error('Failed to open IndexedDB database', {
-          cancel: { label: 'Close', onClick() {} },
+          cancel: { label: 'Close', onClick() { } },
           description: 'Please make sure you have enabled IndexedDB in your browser',
         });
         return;
@@ -162,7 +162,7 @@ export function FileSheet() {
         const IDHeaderName = parsedData.meta.fields?.[0];
         if (!IDHeaderName) {
           toast.error(`Invalid file: ${file.name}`, {
-            cancel: { label: 'Close', onClick() {} },
+            cancel: { label: 'Close', onClick() { } },
             description: 'Please check the file and try again',
           });
           return;
@@ -224,7 +224,7 @@ export function FileSheet() {
         } catch (error) {
           console.error(error);
           toast.error('Error updating universal data', {
-            cancel: { label: 'Close', onClick() {} },
+            cancel: { label: 'Close', onClick() { } },
           });
           return;
         }
@@ -232,7 +232,7 @@ export function FileSheet() {
     }
     if (uploadedFiles.length) {
       toast.success('Data updated successfully', {
-        cancel: { label: 'Close', onClick() {} },
+        cancel: { label: 'Close', onClick() { } },
         description: 'You can now play your uploaded data!',
       });
     }
@@ -253,7 +253,7 @@ export function FileSheet() {
       },
     });
     toast.info('Data reset successfully', {
-      cancel: { label: 'Close', onClick() {} },
+      cancel: { label: 'Close', onClick() { } },
     });
   };
 
@@ -265,7 +265,7 @@ export function FileSheet() {
         <Sheet>
           <SheetTrigger asChild>
             <Button size='sm' className='w-[48%] text-xs hover:bg-[#00695C] text-white bg-[#00796B] font-semibold'>
-              <UploadIcon className='size-3' />
+
               Upload Files
             </Button>
           </SheetTrigger>
@@ -362,13 +362,14 @@ export function FileSheet() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
-        <Button size={'sm'} className='w-[48%] border border-gray-200 bg-white text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50' onClick={handleReset}>
-          Reset Uploads
+        <Button variant="destructive"
+          size="sm"
+          className="flex-1 min-w-0 text-xs border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-colors h-9 shadow-none shrink-0"
+          onClick={handleReset}>
+          Reset Files
         </Button>
       </div>
-      <div className='mt-2 text-gray-500 text-xs italic'>
-        <b>NOTE:</b> The uploaded files will be stored in your browser's local storage and is not shared with anyone.
-      </div>
+
     </div>
   );
 }
