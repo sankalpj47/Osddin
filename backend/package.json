@@ -21,6 +21,7 @@
     "commit": "git-cz"
   },
   "dependencies": {
+    "@ai-sdk/mcp": "^1.0.48",
     "@ai-sdk/openai-compatible": "^1.0.27",
     "@apollo/server": "^5.1.0",
     "@as-integrations/express5": "^1.1.2",

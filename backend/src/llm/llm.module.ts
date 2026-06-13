@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { LlmController } from './llm.controller';
 import { LlmService } from './llm.service';
 import { LangGraphService  as LangGraphLlmService } from './a';
+import { ToolUniverseMcpService } from './tooluniverse-mcp.service';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -37,6 +38,6 @@ import Redis from 'ioredis';
     }),
   ],
   controllers: [LlmController],
-  providers: [LlmService, LangGraphLlmService],
+  providers: [LlmService, LangGraphLlmService, ToolUniverseMcpService],
 })
 export class LlmModule {}

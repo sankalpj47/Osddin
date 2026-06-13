@@ -49,6 +49,7 @@ import {
 } from '@langchain/core/messages';
 
 import { ChatOpenAI } from '@langchain/openai';
+import { ToolUniverseMcpService } from './tooluniverse-mcp.service';
 
 @Injectable()
 export class LangGraphService {
@@ -64,6 +65,7 @@ export class LangGraphService {
 
   constructor(
     private configService: ConfigService,
+    private readonly toolUniverseMcpService: ToolUniverseMcpService,
   ) {
     const nvidiaApiKey =
       this.configService.get<string>(
@@ -348,7 +350,115 @@ private readonly KG_PLANNING_PROMPT =KG_PLANNING_PROMPT;
 
     return messages;
   }
+public async testToolUniverseTools() {
+  const tools =
+    await this.toolUniverseMcpService.getTools();
 
+  console.log(
+    'Available tools:',
+    Object.keys(tools),
+  );
+
+  const testCases: Record<
+    string,
+    Record<string, unknown>
+  > = {
+    PubMed_search_articles: {
+      query: 'Alzheimer disease biomarkers',
+    },
+
+    UniProt_get_entry_by_accession: {
+      accession: 'P04637', // TP53
+    },
+
+    search_clinical_trials: {
+      condition: 'Alzheimer disease',
+    },
+
+    FAERS_count_death_related_by_drug: {
+      drug_name: 'Aspirin',
+    },
+
+    DGIdb_get_drug_gene_interactions: {
+      gene: 'BRCA1',
+    },
+
+    GDC_get_mutation_frequency: {
+      gene: 'TP53',
+      cancer_type: 'BRCA',
+    },
+
+    ChEMBL_get_molecule: {
+      chembl_id: 'CHEMBL25',
+    },
+
+    get_HPO_ID_by_phenotype: {
+      phenotype: 'Seizures',
+    },
+
+    MedlinePlus_get_genetics_condition_by_name:
+      {
+        condition_name:
+          'Cystic fibrosis',
+      },
+  };
+
+  for (const toolName of Object.keys(
+    tools,
+  )) {
+    console.log(
+      `\n========== ${toolName} ==========\n`,
+    );
+
+    const tool = tools[toolName];
+
+    console.log(
+      'Input Schema:',
+    );
+
+    console.dir(
+      tool.inputSchema,
+      { depth: null },
+    );
+
+    if (
+      !testCases[toolName]
+    ) {
+      console.warn(
+        `No test case for ${toolName}`,
+      );
+
+      continue;
+    }
+
+    try {
+      console.log(
+        'Executing with:',
+        testCases[toolName],
+      );
+
+      const result =
+        await tool.execute(
+          testCases[toolName],
+        );
+
+      console.log(
+        'SUCCESS:',
+      );
+
+      console.dir(
+        result,
+        { depth: 2 },
+      );
+    } catch (error) {
+      console.error(
+        `FAILED: ${toolName}`,
+      );
+
+      console.error(error);
+    }
+  }
+}
   private formatSelectedNodeContext(
     promptDto: PromptDto,
   ): string {
@@ -513,7 +623,7 @@ ${nodes}
     );
   }
 
-  public generateKGChatStreamWithPlan(
+  public async generateKGChatStreamWithPlan(
     promptDto: PromptDto,
     plan: string,
   ) {
@@ -527,9 +637,21 @@ ${nodes}
       (request.model ||
         DEFAULT_MODEL) as `nvidia:${string}`;
 
-    const tools =
-      this.generateKGTools();
+    const tools = {
+      ...this.generateKGTools(),
+      ...(await this.toolUniverseMcpService.getTools()),
+    };
+   console.log("Tools available for execution:", Object.keys(tools));
+   console.log(
+    "PubMed tool:"
+);
 
+await this.testToolUniverseTools();
+
+console.dir(
+    tools["PubMed_search_articles"],
+    { depth: null }
+);
     const systemPrompt = `
 ${this.KG_SYSTEM_PROMPT}
 

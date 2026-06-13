@@ -23,6 +23,16 @@ const TOOL_DETAILS: Record<string, { name: string; icon: React.ComponentType<any
   expandContext: { name: 'Expand Context', icon: GlobeIcon },
   computeCentrality: { name: 'Centrality Analysis', icon: BarChart3Icon },
   searchBiomedicalContext: { name: 'Literature Search', icon: BookOpenIcon },
+  PubMed_search_articles: { name: 'PubMed Search', icon: BookOpenIcon },
+  UniProt_get_entry_by_accession: { name: 'UniProt Entry', icon: SearchIcon },
+  search_clinical_trials: { name: 'Clinical Trials', icon: GlobeIcon },
+  FAERS_count_death_related_by_drug: { name: 'FAERS Safety', icon: BarChart3Icon },
+  DGIdb_get_drug_gene_interactions: { name: 'Drug-Gene Interactions', icon: WrenchIcon },
+  GDC_get_mutation_frequency: { name: 'Mutation Frequency', icon: BarChart3Icon },
+  ChEMBL_get_molecule: { name: 'ChEMBL Molecule', icon: SearchIcon },
+  get_HPO_ID_by_phenotype: { name: 'HPO Lookup', icon: SearchIcon },
+  OpenTargets_get_associated_targets_by_disease_efoId: { name: 'OpenTargets Targets', icon: GlobeIcon },
+  MedlinePlus_get_genetics_condition_by_name: { name: 'MedlinePlus Genetics', icon: BookOpenIcon },
 };
 
 function getToolMeta(toolName: string) {

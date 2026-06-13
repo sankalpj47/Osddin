@@ -50,8 +50,21 @@ services:
       - neo4j
       - redis
       - clickhouse
+      - tooluniverse-mcp
     env_file:
       - backend/.env
+    environment:
+      - TOOLUNIVERSE_MCP_URL=http://tooluniverse-mcp:8000/mcp
+
+  tooluniverse-mcp:
+    build:
+      context: tooluniverse-mcp
+      dockerfile: Dockerfile
+    image: ghcr.io/mizzoudbl/tbep-tooluniverse-mcp
+    container_name: tooluniverse-mcp
+    restart: 'always'
+    ports:
+      - "8000:8000"
   
   redis:
     image: redis:8.2-alpine
