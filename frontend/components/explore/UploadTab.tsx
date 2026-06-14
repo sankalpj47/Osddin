@@ -234,8 +234,9 @@ export function UploadTab() {
 
               <div className='space-y-2 pt-2 border-t border-slate-100'>
                 <div className='flex flex-col items-center'>
-                  <span className='text-[11px] text-slate-400 font-medium tracking-wide uppercase'>Example Templates</span>
-                  <div className='flex items-center gap-2 flex-wrap'>
+                  <span className='flex items-center gap-2 text-[11px] text-slate-400 font-medium tracking-wide uppercase'>
+                    <span>Try Example</span>
+
                     {item.links.map((link, index) => (
                       <React.Fragment key={link.label}>
                         <a
@@ -246,10 +247,12 @@ export function UploadTab() {
                           #{link.label.toLowerCase()}
                         </a>
 
-                        {index < item.links.length - 1 && <span className='text-slate-300'>•</span>}
+                        {index < item.links.length - 1 && (
+                          <span className='text-slate-300'>•</span>
+                        )}
                       </React.Fragment>
                     ))}
-                  </div>
+                  </span>
                 </div>
 
                 <div className='space-y-1'>

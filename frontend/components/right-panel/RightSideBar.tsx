@@ -59,25 +59,24 @@ function SectionModule({ title, icon, children, defaultOpen = true }: SectionWra
 export function RightSideBar() {
   return (
     <ScrollArea className="flex h-full w-full min-w-0 flex-col bg-background p-2 text-xs select-none">
-      <SectionModule title="Network Info" icon={<ActivityIcon className="size-5" />}>
-        <NetworkInfo/>
-      </SectionModule>
-       <SectionModule title="Legend" icon={<ActivityIcon className="size-5" />}>
-        <Legend/>
-      </SectionModule>
-       <SectionModule title="Network Style" icon={<PaintbrushIcon className="size-5" />} defaultOpen={false}>
-        <NetworkStyle />
-      </SectionModule>
-      <SectionModule title="Network Analysis" icon={<ActivityIcon className="size-5" />}>
-        <NetworkAnalysis>
-          <RadialAnalysis />
-        </NetworkAnalysis>
-      </SectionModule>
-      <SectionModule title="Network Layout" icon={<SlidersIcon className="size-5" />} defaultOpen={false}>
-        <NetworkLayout />
-      </SectionModule>
-     
-
+        <SectionModule title="Network Info" icon={<ActivityIcon className="size-5" />}>
+          <NetworkInfo/>
+        </SectionModule>
+        <SectionModule title="Legend" icon={<ActivityIcon className="size-5" />}>
+          <Legend/>
+        </SectionModule>
+        <SectionModule title="Network Style" icon={<PaintbrushIcon className="size-5" />} defaultOpen={false}>
+          <NetworkStyle />
+        </SectionModule>
+        <SectionModule title="Network Analysis" icon={<ActivityIcon className="size-5" />}>
+          <NetworkAnalysis>
+            <RadialAnalysis />
+          </NetworkAnalysis>
+        </SectionModule>
+        <SectionModule title="Network Layout" icon={<SlidersIcon className="size-5" />} defaultOpen={false}>
+          <NetworkLayout />
+        </SectionModule>
+    
     </ScrollArea>
   );
 }
