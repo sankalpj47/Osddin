@@ -10,3 +10,5 @@ scripts/**/*.native
 scripts/cypher/*.cypher
 *.dump
 __pycache__/
+
+.github
