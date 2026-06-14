@@ -13,19 +13,19 @@ type TeamCategory = {
 };
 
 export const team: TeamCategory[] = [
-  {
-    heading: 'Principal Investigator',
-    members: [
-      {
-        name: 'Dr. Gyan P. Srivastava',
-        title: `Department of Electrical Engineering and Computer Science
-        University of Missouri, Columbia`,
-        email: 'gps8b9@missouri.edu',
-        link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
-        image: '/image/team/gpsrivastava.jpg',
-      },
-    ],
-  },
+  // {
+  //   heading: 'Principal Investigator',
+  //   members: [
+  //     {
+  //       name: 'Dr. Gyan P. Srivastava',
+  //       title: `Department of Electrical Engineering and Computer Science
+  //       University of Missouri, Columbia`,
+  //       email: 'gps8b9@missouri.edu',
+  //       link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
+  //       image: '/image/team/gpsrivastava.jpg',
+  //     },
+  //   ],
+  // },
   {
     heading: 'Co-Investigators',
     members: [
@@ -48,7 +48,55 @@ export const team: TeamCategory[] = [
     ],
   },
   {
-    heading: 'Development Team',
+    heading: 'Tbep v2 Development Team',
+    members: [
+      {
+        name: 'Shivansh Gupta',
+        title: `Indian Institute of Information Technology, Allahabad`,
+        email: 'guptashivansh374@gmail.com',
+        link: 'https://www.linkedin.com/in/sh1vanshgupta',
+        image: '/image/team/shivanshgupta.jpeg',
+      },
+      {
+        name: 'Urvija Roy Chowdhury',
+        title: `Data Analytics & AI
+             Validasen Inc., California`,
+        email: 'roychowdhury.urvija@gmail.com',
+        link: 'https://www.linkedin.com/in/urvija-roy-chowdhury-a7844426/',
+        image: '/image/team/urvija.png',
+      },
+      {
+        name: 'Abdul Azeem Ansari',
+        title: `Indian Institute of Information Technology, Allahabad`,
+        email: '23abdulazeem23@gmail.com',
+        link: 'https://www.linkedin.com/in/abdulazeemansari',
+        image: '/image/team/abdulazeem.jpg',
+      },
+      {
+        name: 'Mishti garg',
+        title: `Indian Institute of Information Technology, Allahabad`,
+        email: 'gargmishti9@gmail.com',
+        link: 'https://www.linkedin.com/in/mishti-garg-41aa2931b/',
+        image: '/image/team/mishtigarg.jpeg',
+      },
+      {
+        name: 'Kyan Mahajan',
+        title: `Indian Institute of Information Technology, Allahabad`,
+        email: 'kyanmahajan676@gmail.com',
+        link: 'https://www.linkedin.com/in/kyan-mahajan-99a195315',
+        image: '/image/team/kyanmahajan.jpeg',
+      },
+      {
+        name: 'Sankalp Joshi',
+        title: `Indian Institute of Information Technology, Allahabad`,
+        email: 'sankalppjoshi30@gmail.com',
+        link: 'https://www.linkedin.com/in/sankalp-joshi-iiita/',
+        image: '/image/team/sankalpjoshi.jpeg',
+      },
+    ],
+  },
+  {
+    heading: 'Tbep Development Team',
     members: [
       {
         name: 'Bhupesh Dewangan',
