@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { getStartedLinks } from '@/lib/data';
+import Navbar from '@/components/Navbar';
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className='container mx-auto'>
       <div className='flex flex-col gap-4 md:flex-row'>
-        <div className='mb-10 flex w-full flex-col gap-4'>
+        <div className='flex w-full flex-col gap-4'>
+          {/* <Navbar/> */}
           <div className='container'>{children}</div>
         </div>
       </div>
@@ -35,7 +37,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
             </Link>
           ))}
         </div>
-      </section>
+      </section> 
     </div>
   );
 }

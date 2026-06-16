@@ -20,7 +20,7 @@ export default function Navbar() {
       </Banner>
       <div className='container mx-auto flex items-center justify-between p-4'>
         <div className='flex'>
-          <Link href={'/'} className='flex items-center gap-2'>
+          <Link href={'/explore'} className='flex items-center gap-2'>
             <Image src='/image/logo.svg' alt='TBEP logo' width={50} height={50} className='aspect-square' />
             <h1 className='flex flex-wrap items-end font-bold text-lg md:text-xl'>
               <p className='text-2xl lg:text-3xl'>T</p>arget & <p className='ml-1 text-2xl lg:text-3xl'>B</p>iomarker{' '}

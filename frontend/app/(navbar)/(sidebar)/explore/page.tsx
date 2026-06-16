@@ -4,6 +4,7 @@ import { Network, Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
+
 import { Chat } from '@/components/chat';
 import { SearchTab, UploadTab } from '@/components/explore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,7 +16,7 @@ function ExploreContent() {
   const defaultTab = ['search', 'upload', 'knowledge-graph'].includes(tabParam ?? '') ? tabParam : 'search';
 
   return (
-    <div className='relative mx-auto min-h-[60vh] max-w-7xl'>
+    <div className='relative mx-auto m-10 min-h-[60vh] max-w-7xl'>
       <div className='flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:items-stretch'>
         {/* Left Panel */}
         <div className='flex h-full min-h-0 flex-col'>
