@@ -9,7 +9,7 @@ REACTOME_FILE_PATH = "./pathway_reactome_gsea.gmt"
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://tbep.missouri.edu", "https://pdnet.missouri.edu"],
+    allow_origins=["https://tbep.osdin.bio","https://tbep.missouri.edu", "https://pdnet.missouri.edu"],
     allow_methods=["POST","GET"],
     allow_headers=["*"],
 )
