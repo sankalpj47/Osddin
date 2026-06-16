@@ -153,6 +153,15 @@ A complete changelog can be found on [website](https://tbep.missouri.edu/docs/CH
    cp frontend/.env.example frontend/.env
    ```
 
+   If the server already has services using the default published ports, change these in `.env` before starting the stack:
+
+   ```bash
+   FRONTEND_HOST_PORT=3500
+   NESTJS_HOST_PORT=4500
+   GSEA_HOST_PORT=5500
+   TOOLUNIVERSE_MCP_HOST_PORT=8500
+   ```
+
 > 💡 **NOTE**
 > If you are developing this application, then only steps 3 and 4 are required. For production, you can pull the relevant docker images and skip the steps 3 & 4.
 

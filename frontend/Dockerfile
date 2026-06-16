@@ -16,8 +16,11 @@ RUN pnpm run build
 ### STAGE 2: Run ###
 FROM nginx:1.29-alpine
 
+RUN apk add --no-cache apache2-utils
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/30-setup-basic-auth.sh /docker-entrypoint.d/30-setup-basic-auth.sh
+RUN chmod +x /docker-entrypoint.d/30-setup-basic-auth.sh
 
 COPY --from=builder /app/out/video /usr/share/nginx/html/video
 COPY --from=builder /app/out/image /usr/share/nginx/html/image
@@ -32,5 +35,3 @@ COPY --from=builder /app/out/*.xml /usr/share/nginx/html/
 COPY --from=builder /app/out/examples /usr/share/nginx/html/examples
 
 EXPOSE 80
-
-ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
