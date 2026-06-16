@@ -19,7 +19,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     image: ghcr.io/mizzoudbl/tbep-frontend
-    container_name: frontend
+    container_name: frontend-osdin
     restart: 'always'
     env_file:
       - frontend/.env
