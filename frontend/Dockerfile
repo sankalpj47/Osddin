@@ -31,6 +31,12 @@ COPY --from=builder /app/out/*.html /usr/share/nginx/html/
 COPY --from=builder /app/out/*.xml /usr/share/nginx/html/
 COPY --from=builder /app/out/examples /usr/share/nginx/html/examples
 
+COPY --from=builder /app/out/osddin /usr/share/nginx/html/osddin
+COPY --from=builder /app/out/about /usr/share/nginx/html/about
+COPY --from=builder /app/out/team /usr/share/nginx/html/team
+COPY --from=builder /app/out/feedback /usr/share/nginx/html/feedback
+COPY --from=builder /app/out/explore /usr/share/nginx/html/explore
+
 EXPOSE 80
 
 ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
