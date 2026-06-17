@@ -245,7 +245,7 @@ export default function Home() {
 
       <div className="mt-8 flex items-center gap-6">
         <Link
-          href="/explore"
+          href='https://tbep.osdin.bio/explore' target='_blank'
           className="inline-flex items-center gap-2 text-base font-medium text-teal-700 transition-all duration-300 hover:gap-4"
         >
           Explore module →
@@ -294,7 +294,7 @@ export default function Home() {
 
 
   <Link
-    href="/explore"
+    href='https://tbep.osdin.bio/explore' target='_blank'
     className="mt-8 inline-flex items-center gap-2 text-base font-medium text-teal-700 transition-all duration-300 hover:gap-4"
   >
     Explore module →
