@@ -50,15 +50,14 @@ export default function VisionPage() {
     <section className="bg-[#eef3f2] py-20">
       <div className="mx-auto max-w-6xl px-6 text-center">
 
-        <div className="inline-flex rounded-full border border-slate-300 bg-white px-6 py-2 text-xs tracking-[0.3em] text-slate-600 uppercase">
+        <div className="inline-flex rounded-full border border-slate-300 bg-white px-6 py-2 text-md font-medium tracking-[0.3em] text-slate-600 uppercase">
           Our Vision
         </div>
 
-        <h1 className="mt-8 text-5xl font-medium tracking-tight text-slate-900">
+        <h1 className="mt-8 text-4xl font-medium tracking-tight text-slate-900">
           A unified ecosystem for{' '}
           <span className="text-teal-600">
             open
-            <br />
             drug discovery.
           </span>
         </h1>

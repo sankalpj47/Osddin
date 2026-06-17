@@ -25,7 +25,7 @@ export default function NavbarOsdin() {
 
   <div className="flex-1 flex justify-start pl-8">
     <Link href="/" className="flex items-center gap-3">
-      <Image src="/image/osddin-logo.png" alt="OSDDIN" width={250} height={28} />
+      <Image src="/image/osddinlogo.png" alt="OSDDIN" width={230} height={28} />
     </Link>
   </div>
 

@@ -13,19 +13,19 @@ type TeamCategory = {
 };
 
 export const team: TeamCategory[] = [
-  // {
-  //   heading: 'Principal Investigator',
-  //   members: [
-  //     {
-  //       name: 'Dr. Gyan P. Srivastava',
-  //       title: `Department of Electrical Engineering and Computer Science
-  //       University of Missouri, Columbia`,
-  //       email: 'gps8b9@missouri.edu',
-  //       link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
-  //       image: '/image/team/gpsrivastava.jpg',
-  //     },
-  //   ],
-  // },
+  {
+    heading: 'Principal Investigator',
+    members: [
+      {
+        name: 'Dr. Gyan P. Srivastava',
+        title: `Department of Electrical Engineering and Computer Science
+        University of Missouri, Columbia`,
+        email: 'gps8b9@missouri.edu',
+        link: 'https://engineering.missouri.edu/faculty/gyan-srivastava/',
+        image: '/image/team/gpsrivastava.jpg',
+      },
+    ],
+  },
   {
     heading: 'Co-Investigators',
     members: [
@@ -172,18 +172,18 @@ export const teamOsddin: TeamCategory[] = [
   {
     heading: 'Co-Investigator',
     members: [
-      // {
-      //   name: 'Prof. Dong Xu',
-      //   title: `Department of Electrical Engineering and Computer Science
-      //   University of Missouri, Columbia`,
-      //   email: 'xudong@missouri.edu',
-      //   link: 'https://engineering.missouri.edu/faculty/dong-xu/',
-      //   image: '/image/team/dongxu.jpg',
-      // },
+      {
+        name: 'Prof. Vijay Tiwari',
+        title: `Professor and Head of Research
+        Institute of Molecular Medicine, SDU, Odense, Denmark`,
+        email: 'Tiwari@health.sdu.dk',
+        link: 'https://tiwarilab.org/',
+        image: '/image/team/vijaytiwari.png',
+      },
       {
         name: 'Dr. Muneendra Ojha',
-        title: `Department of Information Technology
-        Indian Institute of Information Technology, Allahabad`,
+        title: `Artificial Intelligence and Multi-Agent System (AIMS) Lab
+        IIIT Allahabad`,
         email: 'muneendra@iiita.ac.in',
         link: 'https://www.linkedin.com/in/muneendra-ojha-a3153b15/',
         image: '/image/team/muneendraojha.jpg',
