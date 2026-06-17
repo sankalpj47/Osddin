@@ -52,7 +52,8 @@ services:
       - clickhouse
       - tooluniverse-mcp
     env_file:
-      - backend/.env
+      - path: backend/.env
+        required: false
     environment:
       - TOOLUNIVERSE_MCP_URL=http://tooluniverse-mcp:8000/mcp
 

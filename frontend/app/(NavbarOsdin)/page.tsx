@@ -54,7 +54,7 @@ export default function Home() {
           </p>
 
 <div className='mt-12 flex flex-wrap justify-center gap-3'>
-  <Link href='/explore'>
+  <Link href='https://tbep.osdin.bio/explore' target='_blank'>
     <Button
       size='lg'
       className='h-12 rounded-lg bg-teal-500 px-7 text-base hover:bg-teal-400'
