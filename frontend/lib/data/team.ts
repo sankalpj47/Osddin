@@ -148,8 +148,7 @@ export const teamOsddin: TeamCategory[] = [
     members: [
       {
         name: 'Prof. Samir Brahmachari',
-        title: `Doctor of Philosophy
-        PhD at Indian Institute of Science (IISc)`,
+        title: `Former Director General CSIR, Former Secretary DSIR and Founding Director of CSIR-IGIB`,
         email: 'skb@igib.in',
         link: 'https://www.linkedin.com/in/samir-k-brahmachari-9782b1105/',
         image: '/image/team/samirbrahmachari.jpg',

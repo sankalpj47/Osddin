@@ -9,6 +9,7 @@ export const links = [
 ];
 
 export const navLinks = [
+  { href: '/', label: 'Home', icon: <House className="size-5" /> },
   { href: '/osddin/vision', label: 'Vision', icon: <Lightbulb className="size-5" /> },
   { href: '/osddin/team', label: 'Team', icon: <Users className="size-5" /> },
   { href: '/osddin/crdd', label: 'CRDD', icon: <Computer className="size-5" /> },
