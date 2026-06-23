@@ -45,28 +45,99 @@ export default function OSDDPage() {
           </div>
         </div>
 
-        {/* Feature Cards */}
-        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {osddItems.map((item) => (
-            <div
-              key={item.number}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-left shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-teal-300 hover:shadow-xl"
-            >
-              <div className="absolute left-0 top-0 h-[3px] w-full origin-left scale-x-0 bg-teal-500 transition-transform duration-500 ease-out group-hover:scale-x-100" />
-              <div className="absolute inset-0 bg-linear-to-br from-teal-50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="relative">
-                <p className="text-sm font-semibold text-teal-500 transition-colors duration-300 group-hover:text-teal-600">
-                  {item.number}
-                </p>
-                <h3 className="mt-5 text-2xl font-semibold leading-snug text-slate-900">
-                  {item.title}
-                </h3>
-                <div className="my-4 h-px w-8 bg-teal-200 transition-all duration-300 group-hover:w-16 group-hover:bg-teal-400" />
-                <p className="text-lg leading-relaxed text-slate-500">{item.description}</p>
-              </div>
-            </div>
-          ))}
+             {/* Organisation Section */}
+        <div className="mt-24">
+          <div className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-1.5 text-xs font-medium uppercase tracking-[0.3em] text-slate-600">
+            Organisation
+          </div>
+          <h2 className="mt-6 text-3xl font-medium tracking-tight text-slate-900">
+            Leadership & Governance
+          </h2>
+          <div className="mx-auto mt-3 h-px w-16 bg-teal-600" />
+          <p className="mx-auto mt-6 max-w-3xl text-xl leading-relaxed text-slate-500">
+            OSDD is a collaborative project under CSIR. Individual projects are taken up by
+            participating bodies and managed by a Principal Investigator, centrally supervised
+            by the OSDD project director at CSIR.
+          </p>
         </div>
+
+        {/* Chief Mentor */}
+        <div className="mt-10">
+          <div className="mb-5 flex items-center justify-center gap-4">
+            <span className="rounded-full bg-teal-600 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+              Chief Mentor
+            </span>
+          </div>
+          <div className="flex justify-center">
+            <PersonCard
+              name={chiefMentor.name}
+              role={chiefMentor.role}
+              affiliation={chiefMentor.affiliation}
+              image={chiefMentor.image}
+              size="lg"
+            />
+          </div>
+        </div>
+
+        {/* Mentors & Project Director */}
+        <div className="mt-10">
+          <div className="mb-5 flex items-center justify-center gap-4">
+            <span className="rounded-full bg-slate-700 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+              Mentors & Leadership
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {mentors.map((person) => (
+              <PersonCard
+                key={person.name}
+                name={person.name}
+                role={person.role}
+                affiliation={person.affiliation}
+                image={person.image}
+                size="sm"
+              />
+            ))}
+          </div>
+        </div>
+ 
+<div className="mt-24">
+  <div className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-1.5 text-xs font-medium uppercase tracking-[0.3em] text-slate-600">
+    Highlights
+  </div>
+
+  {/* Feature Cards */}
+  <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    {osddItems.map((item) => (
+      <div
+        key={item.number}
+        className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-left shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-teal-300 hover:shadow-xl"
+      >
+        <div className="absolute left-0 top-0 h-[3px] w-full origin-left scale-x-0 bg-teal-500 transition-transform duration-500 ease-out group-hover:scale-x-100" />
+        <div className="absolute inset-0 bg-linear-to-br from-teal-50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="relative">
+          <p className="text-sm font-semibold text-teal-500 transition-colors duration-300 group-hover:text-teal-600">
+            {item.number}
+          </p>
+          <h3 className="mt-5 text-2xl font-semibold leading-snug text-slate-900">
+            {item.title}
+          </h3>
+          <div className="my-4 h-px w-8 bg-teal-200 transition-all duration-300 group-hover:w-16 group-hover:bg-teal-400" />
+          <p className="text-lg leading-relaxed text-slate-500">{item.description}</p>
+          {item.link && (
+              <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-base font-medium text-teal-600 underline-offset-2 hover:underline"
+            >
+              Learn more →
+            </a>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
         {/* Process Section */}
         <div className="mt-24">
@@ -140,60 +211,7 @@ export default function OSDDPage() {
           </div>
         </div>
 
-        {/* Organisation Section */}
-        <div className="mt-24">
-          <div className="inline-flex rounded-full border border-slate-300 bg-white px-5 py-1.5 text-xs font-medium uppercase tracking-[0.3em] text-slate-600">
-            Organisation
-          </div>
-          <h2 className="mt-6 text-3xl font-medium tracking-tight text-slate-900">
-            Leadership & Governance
-          </h2>
-          <div className="mx-auto mt-3 h-px w-16 bg-teal-600" />
-          <p className="mx-auto mt-6 max-w-3xl text-xl leading-relaxed text-slate-500">
-            OSDD is a collaborative project under CSIR. Individual projects are taken up by
-            participating bodies and managed by a Principal Investigator, centrally supervised
-            by the OSDD project director at CSIR.
-          </p>
-        </div>
-
-        {/* Chief Mentor */}
-        <div className="mt-10">
-          <div className="mb-5 flex items-center justify-center gap-4">
-            <span className="rounded-full bg-teal-600 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-              Chief Mentor
-            </span>
-          </div>
-          <div className="flex justify-center">
-            <PersonCard
-              name={chiefMentor.name}
-              role={chiefMentor.role}
-              affiliation={chiefMentor.affiliation}
-              image={chiefMentor.image}
-              size="lg"
-            />
-          </div>
-        </div>
-
-        {/* Mentors & Project Director */}
-        <div className="mt-10">
-          <div className="mb-5 flex items-center justify-center gap-4">
-            <span className="rounded-full bg-slate-700 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-              Mentors & Leadership
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {mentors.map((person) => (
-              <PersonCard
-                key={person.name}
-                name={person.name}
-                role={person.role}
-                affiliation={person.affiliation}
-                image={person.image}
-                size="sm"
-              />
-            ))}
-          </div>
-        </div>
+   
 
         {/* Funding Section */}
         <div className="mt-24">

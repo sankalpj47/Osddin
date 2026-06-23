@@ -17,7 +17,7 @@ export default function CRDDPage() {
         </h1>
 
         <div className="mx-auto mt-6 h-px w-24 bg-teal-600" />
-
+{/* 
         <p className="mx-auto mt-8 max-w-5xl text-xl leading-relaxed text-slate-500">
           The OSDD Forum is an initiative with a vision to provide affordable healthcare to the
           developing world. The OSDD concept aims to synergize the power of genomics and
@@ -25,13 +25,13 @@ export default function CRDDPage() {
           talent from universities and industry. It seeks to provide a global platform where the
           best brains can collaborate and collectively endeavor to solve the complex problems
           associated with discovering novel therapies for neglected diseases like tuberculosis.
-        </p>
+        </p> */}
 
         <p className="mx-auto mt-6 max-w-5xl text-xl leading-relaxed text-slate-500">
           CRDD (Computational Resources for Drug Discovery) is an important module of the in
           silico module of OSDD. The CRDD web portal provides computer resources related to drug
           discovery on a single platform. Visit the{' '}
-          <a href="https://webs.iiitd.edu.in/wiki" target="_blank" rel="noopener noreferrer" className="font-medium text-teal-600 hover:underline">CRDD Wiki</a>
+          <a href="https://webs.iiitd.edu.in/" target="_blank" rel="noopener noreferrer" className="font-medium text-teal-600 hover:underline">CRDD Wiki</a>
           {' '}to learn more about drug discovery resources.
         </p>
 

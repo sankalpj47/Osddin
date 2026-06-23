@@ -22,6 +22,7 @@ export const osddItems = [
     title: 'Affordable Innovation',
     description:
       'Developing accessible and cost-effective medicines through transparent, community-driven scientific research.',
+    link: 'http://www.samirbrahmachari.com/',
   },
 ];
 
