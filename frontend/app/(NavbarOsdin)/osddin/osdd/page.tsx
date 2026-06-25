@@ -18,7 +18,7 @@ export default function OSDDPage() {
 
         <div className="mx-auto mt-6 h-px w-24 bg-teal-600" />
 
-        <p className="mx-auto mt-8 max-w-5xl text-xl leading-relaxed text-slate-500">
+     <p className="mx-auto mt-8 max-w-5xl text-xl leading-relaxed text-slate-500">
           Open Source Drug Discovery (OSDD) is a CSIR-led Team India Consortium with global
           participation, bringing together researchers, academia, students, industries, and
           institutions to collaboratively discover affordable treatments for neglected tropical
@@ -26,6 +26,14 @@ export default function OSDDPage() {
           from around the world to share knowledge, resources, and expertise in the pursuit of
           accessible healthcare solutions.
         </p>
+            <a
+        href="https://www.samirbrahmachari.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block text-lg font-medium text-teal-600 underline-offset-2 hover:underline"
+        >
+          More info {'→'}
+        </a>
 
         {/* Stats */}
         <div className="mx-auto mt-20 max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">

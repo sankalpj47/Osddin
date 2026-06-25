@@ -150,7 +150,7 @@ export const teamOsddin: TeamCategory[] = [
         name: 'Prof. Samir Brahmachari',
         title: `Former Director General CSIR, Former Secretary DSIR and Founding Director of CSIR-IGIB`,
         email: 'skb@igib.in',
-        link: 'https://www.linkedin.com/in/samir-k-brahmachari-9782b1105/',
+        link: 'https://www.samirbrahmachari.com/',
         image: '/image/team/samirbrahmachari.jpg',
       },
     ],
@@ -184,7 +184,7 @@ export const teamOsddin: TeamCategory[] = [
         title: `Artificial Intelligence and Multi-Agent System (AIMS) Lab
         IIIT Allahabad`,
         email: 'muneendra@iiita.ac.in',
-        link: 'https://www.linkedin.com/in/muneendra-ojha-a3153b15/',
+        link: 'https://aims.iiita.ac.in/',
         image: '/image/team/muneendraojha.jpg',
       },
     ],
